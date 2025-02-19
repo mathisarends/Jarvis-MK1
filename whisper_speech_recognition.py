@@ -31,36 +31,32 @@ class WhuisperSpeechRecognition:
         start_time = time.time()
         print("🎙 Aufnahme gestartet...")
 
-        try:
-            with sd.InputStream(samplerate=self.samplerate, channels=1,
+        with sd.InputStream(samplerate=self.samplerate, channels=1,
                             dtype=np.int16,
                             blocksize=int(self.samplerate * 0.1),  # 100ms Blocks
                             callback=self.audio_callback):
-                while True:
-                    if not self.audio_queue.empty():
-                        current_audio = self.audio_queue.get()
-                        buffer.append(current_audio)
+            while True:
+                if not self.audio_queue.empty():
+                    current_audio = self.audio_queue.get()
+                    buffer.append(current_audio)
                         
-                        # Nur die letzten 0.5 Sekunden analysieren
-                        window_size = int(self.samplerate * 0.5)  # halbe Sekunde
-                        recent_samples = np.concatenate(buffer[-5:]) if len(buffer) > 5 else np.concatenate(buffer)
-                        if len(recent_samples) > window_size:
-                            recent_samples = recent_samples[-window_size:]
+                    # Nur die letzten 0.5 Sekunden analysieren
+                    window_size = int(self.samplerate * 0.5)  # halbe Sekunde
+                    recent_samples = np.concatenate(buffer[-5:]) if len(buffer) > 5 else np.concatenate(buffer)
+                    if len(recent_samples) > window_size:
+                        recent_samples = recent_samples[-window_size:]
                         
-                        volume = np.max(np.abs(recent_samples)) / 32767.0
+                    volume = np.max(np.abs(recent_samples)) / 32767.0
 
-                        if volume < silence_threshold:
-                            if time.time() - start_time > silence_duration:
-                                print("⏸ Stille erkannt, Aufnahme stoppt.")
-                                break
-                        else:
-                            start_time = time.time()
+                    if volume < silence_threshold:
+                        if time.time() - start_time > silence_duration:
+                            print("⏸ Stille erkannt, Aufnahme stoppt.")
+                            break
+                    else:
+                        start_time = time.time()
 
-        except Exception as e:
-            print(f"Fehler: {e}")
-            return None
-        finally:
-            self.is_recording = False
+
+        self.is_recording = False
 
         if len(buffer) == 0:
             return None
@@ -88,7 +84,6 @@ class WhuisperSpeechRecognition:
                     response_format="text" 
                 )
 
-            print("✅ Transkription erfolgreich")
             return transcription  
             
         except Exception as e:
