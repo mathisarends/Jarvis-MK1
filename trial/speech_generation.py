@@ -23,7 +23,7 @@ openai = OpenAI()
 def talker(message):
     response = openai.audio.speech.create(
       model="tts-1",
-      voice="onyx",
+      voice="sage",
       input=message
     )
     
@@ -31,4 +31,4 @@ def talker(message):
     audio = AudioSegment.from_file(audio_stream, format="mp3")
     play(audio)
 
-talker("Well, hi there what are you up to today?")
+talker("Alice im Wunderland (ursprünglich Alices Abenteuer im Wunderland; englischer Originaltitel Alice’s Adventures in Wonderland) ist ein erstmals 1865 erschienenes Kinderbuch des britischen Schriftstellers Lewis Carroll.")
