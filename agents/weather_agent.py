@@ -2,7 +2,7 @@ import os
 from typing import Optional
 import python_weather
 import asyncio
-from location_finder import LocationFinder
+from agents.location_finder import LocationFinder
 
 class WeatherClient:
     def __init__(self, city: Optional[str] = None):
