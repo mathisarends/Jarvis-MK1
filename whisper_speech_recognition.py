@@ -58,7 +58,7 @@ class WhuisperSpeechRecognition:
 
         self.is_recording = False
 
-        if len(buffer) == 0:
+        if len(buffer) < 20:
             return None
 
         audio_data = np.concatenate(buffer, axis=0)
