@@ -9,7 +9,7 @@ try:
     while True:
         if wakeword_listener.listen_for_wakeword():
             # ✅ Aufnahme starten & als MP3 speichern
-            audio_file = speech_recognizer.record_audio(filename="speech.mp3")
+            audio_file = speech_recognizer.record_audio()
 
             # ✅ Transkription mit OpenAI Whisper API
             text = speech_recognizer.transcribe_audio(audio_file)

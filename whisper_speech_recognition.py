@@ -22,15 +22,17 @@ class WhuisperSpeechRecognition:
         if self.is_recording:
             self.audio_queue.put(indata.copy())
 
-    def record_audio(self, filename="recorded_audio.wav", silence_threshold=0.1, silence_duration=1.5):
+    def record_audio(self, filename="./temp/recorded_audio.mp3", silence_threshold=0.1, silence_duration=1.5):
         """Nimmt Sprache auf und speichert sie als WAV-Datei."""
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
         self.is_recording = True
         buffer = []
         start_time = time.time()
         print("🎙 Aufnahme gestartet...")
 
         try:
-            with sd.InputStream(samplerate=self.samplerate, channels=1, 
+            with sd.InputStream(samplerate=self.samplerate, channels=1,
                             dtype=np.int16,
                             blocksize=int(self.samplerate * 0.1),  # 100ms Blocks
                             callback=self.audio_callback):
