@@ -88,10 +88,9 @@ class FitbitAPI:
             print("❌ API Fehler:", response.json())
             return None
 
-    def get_sleep_data(self, date=None):
+    def get_sleep_data(self):
         """Holt die Schlafdaten für das angegebene Datum (Standard: Letzte Nacht)."""
-        if date is None:
-            date = datetime.date.today().strftime("%Y-%m-%d")
+        date = datetime.date.today().strftime("%Y-%m-%d")
 
         endpoint = f"/sleep/date/{date}.json"
         sleep_data =  self.make_request(endpoint)
