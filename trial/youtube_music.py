@@ -15,4 +15,4 @@ def download_audio(youtube_url):
     sound = AudioSegment.from_file("temp_audio.mp3")
     play(sound)
 
-download_audio("https://www.youtube.com/watch?v=dQw4w9WgXcQ")  # Rickroll 😈
+download_audio("https://www.youtube.com/watch?v=OOOm7jZicEg&ab_channel=TheAudioSpotlight")

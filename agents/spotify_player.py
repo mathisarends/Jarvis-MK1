@@ -14,20 +14,21 @@ class SpotifyPlayer:
             redirect_uri="http://localhost:8080",
             scope="user-modify-playback-state,user-read-playback-state"
         ))
+        
+        self.device_name = device_name
+        self.set_device_id(self.device_name)
 
-        self.device_id = self.get_device_id(device_name)
-
-    def get_device_id(self, device_name):
+    def set_device_id(self, device_name):
         """Sucht nach einem Spotify-Gerät anhand des Namens und gibt die ID zurück."""
         devices = self.sp.devices()
 
         for device in devices.get("devices", []):
             if device["name"] == device_name:
                 print(f"✅ Gerät gefunden: {device_name} ({device['id']})")
-                return device["id"]
+                self.device_id = device["id"]
+                return
 
         print("❌ Kein passendes Gerät gefunden!")
-        return None
 
     def search_track(self, query):
         """Sucht einen Song bei Spotify und gibt die Track-URI zurück."""
@@ -44,7 +45,7 @@ class SpotifyPlayer:
     def play_track(self, query):
         """Sucht einen Song und spielt ihn ab, falls ein Gerät vorhanden ist."""
         if not self.device_id:
-            print("❌ Kein aktives Spotify-Gerät gefunden!")
+            self.set_device_id(self.device_name)
             return
 
         track_uri = self.search_track(query)

@@ -6,6 +6,7 @@ from openai import OpenAI
 from voice_generator import VoiceGenerator
 from agents.weather_agent import WeatherClient
 from agents.fitbit_agent import FitbitAPI
+from agents.spotify_player import SpotifyPlayer
 
 class OpenAIChatAssistant:
     def __init__(self, voice="sage", model="gpt-4o-mini", history_limit=5):
@@ -15,6 +16,7 @@ class OpenAIChatAssistant:
         self.tts = VoiceGenerator(voice=voice)
         self.history = deque(maxlen=history_limit)
         self.fitbit_api = FitbitAPI()
+        self.spotify_player = SpotifyPlayer()
         
         # Definition der verfügbaren Funktionen für das Modell
         self.tools = [
@@ -44,6 +46,25 @@ class OpenAIChatAssistant:
                     },
                     "strict": True
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "play_song",
+                    "description": "Plays a song on Spotify by searching for the specified track and artist.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The song title and optionally the artist. Example: 'Blinding Lights by The Weeknd'"
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": False
+                    },
+                    "strict": True
+                }
             }
         ]
 
@@ -55,9 +76,11 @@ class OpenAIChatAssistant:
             "You have access to the following functions:\n"
             "1. A weather function that gives the important stuff—temperature, rain, wind—no fluff.\n"
             "2. A Fitbit function that pulls sleep data and breaks it down without getting all clinical about it.\n"
+            "3. A Spotify function that lets you play music by searching for songs and artists.\n"
             "When talking about sleep, report total sleep time, time in bed, and deep sleep in **hours, not minutes**. "
             "If something was really off—like way too little deep sleep or a weirdly short night—point it out casually. "
-            "No ratings, no ‘good’ or ‘bad’ sleep—just the facts. Keep it snappy, like you’re talking to a friend."
+            "No ratings, no ‘good’ or ‘bad’ sleep—just the facts. Keep it snappy, like you’re talking to a friend.\n"
+            "When playing music, confirm the song name and artist before starting playback."
         )
 
 
@@ -96,6 +119,15 @@ class OpenAIChatAssistant:
                 return "\n".join(summary)
             else:
                 return "No sleep data available for the requested date."
+            
+        elif function_name == "play_song":
+            query = arguments.get("query")
+            print(query)
+            if query:
+                self.spotify_player.play_track(query)
+                return f"Playing {query} on Spotify."
+            return "No song specified."
+        
         else:
             raise ValueError(f"Unknown function: {function_name}")
 

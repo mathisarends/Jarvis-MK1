@@ -3,10 +3,13 @@ from dotenv import load_dotenv
 import pvporcupine
 import pyaudio
 import numpy as np
+from sound_player import SoundPlayer
 
 class WakeWordListener:
+    """Erkennt das Wake-Word und gibt ein Signal aus."""
+
     def __init__(self, wakeword="jarvis"):
-        """Initialisiert die Wake-Word-Erkennung"""
+        """Initialisiert die Wake-Word-Erkennung."""
         self.wakeword = wakeword
         self.handle = pvporcupine.create(
             access_key=self.load_access_key(),
@@ -17,29 +20,33 @@ class WakeWordListener:
         self.stream = self.pa.open(
             format=pyaudio.paInt16,  
             channels=1,  
-            rate=16000, 
+            rate=16000,
             input=True,
             frames_per_buffer=self.handle.frame_length
         )
 
+        self.sound_player = SoundPlayer()
+
     def listen_for_wakeword(self):
-        """Hört auf das Wake-Word und gibt True zurück, wenn erkannt"""
+        """Hört auf das Wake-Word und gibt True zurück, wenn erkannt."""
         print("🎤 Warte auf Wake-Word...")
         while True:
             pcm = np.frombuffer(self.stream.read(self.handle.frame_length, exception_on_overflow=False), dtype=np.int16)
             keyword_index = self.handle.process(pcm)
             if keyword_index >= 0:
                 print("🚀 Wake-Word erkannt!")
-                return True  
+
+                self.sound_player.play_listening_sound()
+
+                return True
 
     def cleanup(self):
-        """Ressourcen aufräumen"""
+        """Ressourcen aufräumen."""
         self.stream.close()
         self.pa.terminate()
         self.handle.delete()
         
     def load_access_key(self):
-        """Lädt den Picovoice Access Key aus der Umgebungsvariable"""
+        """Lädt den Picovoice Access Key aus der Umgebungsvariable."""
         load_dotenv()
         return os.getenv("PICO_ACCESS_KEY")
-

@@ -25,6 +25,7 @@ devices = sp.devices()
 device_id = None
 
 for device in devices["devices"]:
+    print(device)
     if device["name"] == "MATHISPC":
         device_id = device["id"]
         break
