@@ -10,21 +10,21 @@ class GmailReader:
 
     SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
     
-    def __init__(self, credentials_file="credentials.json", token_file="token.pickle"):
-        self.credentials_file = credentials_file
-        self.token_file = token_file
+    def __init__(self):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        self.credentials_file = os.path.join(base_dir, "credentials.json")
+        self.token_file = os.path.join(base_dir, "token.pickle")
         self.service = self.get_gmail_service()
-
+        
     def get_gmail_service(self):
         """Authentifiziert den Nutzer und gibt den Gmail-Service zurück"""
         creds = None
 
-        # Prüfe, ob ein gespeicherter Token existiert
         if os.path.exists(self.token_file):
             with open(self.token_file, "rb") as token:
                 creds = pickle.load(token)
 
-        # Falls keine gültigen Anmeldedaten existieren, durchlaufe den OAuth-Flow
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
@@ -32,11 +32,9 @@ class GmailReader:
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, self.SCOPES)
                 creds = flow.run_local_server(port=0)
 
-            # Speichere das Token für zukünftige Sitzungen
             with open(self.token_file, "wb") as token:
                 pickle.dump(creds, token)
 
-        # Erstelle den Gmail-Service
         return build("gmail", "v1", credentials=creds)
 
     def clean_email_content(self, content):
@@ -53,7 +51,6 @@ class GmailReader:
         payload = msg["payload"]
         body = None
 
-        # Falls die E-Mail mehrere Teile hat, suche nach dem Text-Part
         if "parts" in payload:
             for part in payload["parts"]:
                 if part["mimeType"] == "text/plain":
@@ -69,31 +66,36 @@ class GmailReader:
             return "⚠️ Kein lesbarer Text gefunden."
 
     def list_primary_unread_messages(self, max_results=5):
-        """Listet nur ungelesene E-Mails aus der Kategorie 'Allgemein' auf"""
+        """Listet ungelesene E-Mails aus der Kategorie 'Allgemein' auf und gibt sie als String zurück"""
         query = "category:primary is:unread"
         results = self.service.users().messages().list(userId="me", q=query, maxResults=max_results).execute()
         messages = results.get("messages", [])
 
         if not messages:
-            print("📭 Keine ungelesenen E-Mails in 'Allgemein' gefunden.")
-            return
+            return "📭 Keine ungelesenen E-Mails in 'Allgemein' gefunden."
 
+        output_parts = []
         for msg in messages:
             msg_data = self.service.users().messages().get(userId="me", id=msg["id"], format="full").execute()
             headers = msg_data["payload"]["headers"]
 
-            # Extrahiere Betreff, Absender und Datum
             subject = next((h["value"] for h in headers if h["name"] == "Subject"), "Kein Betreff")
             sender = next((h["value"] for h in headers if h["name"] == "From"), "Unbekannter Absender")
             date = next((h["value"] for h in headers if h["name"] == "Date"), "Kein Datum")
             content = self.get_email_content(msg_data)
 
-            print(f"📧 Betreff: {subject}")
-            print(f"👤 Von: {sender}")
-            print(f"📅 Datum: {date}")
-            print(f"📜 Inhalt:\n{content}")
-            print("=" * 80)
+            email_info = [
+                f"Betreff: {subject}",
+                f"Von: {sender}",
+                f"Datum: {date}",
+                f"Inhalt:\n{content}",
+                "=" * 80
+            ]
+            output_parts.append("\n".join(email_info))
+
+        return "\n".join(output_parts)
 
 if __name__ == "__main__":
     reader = GmailReader()
-    reader.list_primary_unread_messages(5)  
+    email_text = reader.list_primary_unread_messages(5)
+    print(email_text)  # Nur zum Testen

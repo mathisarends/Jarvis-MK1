@@ -13,11 +13,7 @@ class WeatherClient:
         async with python_weather.Client(unit=python_weather.METRIC) as client:
             return await client.get(self.city)
 
-    def get_weather(self):
-        """Runs the async function to fetch weather data and returns the output as a list of strings."""
-        return asyncio.run(self._fetch_weather_data())
-
-    async def _fetch_weather_data(self):
+    async def fetch_weather_data(self):
         """Fetches weather data and formats it as a list of strings."""
         weather = await self._fetch_weather()
 
