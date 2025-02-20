@@ -22,6 +22,8 @@ try:
             
             print(f"🗣 Erkannt: {text}")
 
+            # Das Sprechen hier bricht wirklich immer den ganzne Prozess ab ich weiß nicht woran das liegt ich kann da noch 
+            # so viele Wrapper drum bauen
             chat_assistant.speak_response(text)
 
 except KeyboardInterrupt:
