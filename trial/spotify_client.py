@@ -34,11 +34,25 @@ if device_id:
 else:
     print("Kein passendes Gerät gefunden!")
     
+def search_track(sp, query):
+    """Sucht einen Song bei Spotify und gibt die Track-URI zurück"""
+    results = sp.search(q=query, type="track", limit=1)
+    print(results)
 
-track_uri="spotify:track:0xLCa6dp0wmDUhkDGKzDpv"
+    if results["tracks"]["items"]:
+        track = results["tracks"]["items"][0]
+        print(f"🎵 Gefunden: {track['name']} - {track['artists'][0]['name']}")
+        return track["uri"]
+    else:
+        print("❌ Kein Song gefunden!")
+        return None
+    
+user_input = input("Welchen Song möchtest du hören? ")
 
-if device_id:
+track_uri = search_track(sp, user_input)
+
+if track_uri and device_id:
     sp.start_playback(device_id=device_id, uris=[track_uri])
-    print("Song wird abgespielt!")
+    print("🎶 Song wird abgespielt!")
 else:
-    print("Kein aktives Spotify-Gerät gefunden!")
+    print("❌ Song konnte nicht abgespielt werden!")
