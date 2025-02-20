@@ -6,7 +6,7 @@ import base64
 
 CLIENT_ID = "23Q7M4"
 CLIENT_SECRET = "947c845230815506bf6b4995cd093b44"
-AUTH_CODE = "74b19343d6937cce13082541592b00a45ffd36e2"
+AUTH_CODE = "ad5a815553e328ad339a1c77d15db2f85d400cdf"
 
 TOKEN_URL = "https://api.fitbit.com/oauth2/token"
 

@@ -1,20 +1,34 @@
 import requests
 import datetime
 import base64
+import os
+from dotenv import load_dotenv
 
 class FitbitAPI:
-    def __init__(self, client_id, client_secret, refresh_token, access_token):
-        """Initialisiert die Fitbit API mit OAuth2-Authentifizierung."""
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.refresh_token = refresh_token
-        self.access_token = access_token
+    def __init__(self, env_file=".env"):
+        """Initialisiert die Fitbit API mit OAuth2-Authentifizierung und lädt Werte aus der .env Datei."""
+        load_dotenv()
+
+        self.client_id = os.getenv("FITBIT_CLIENT_ID")
+        self.client_secret = os.getenv("FITBIT_CLIENT_SECRET")
+        self.access_token = os.getenv("FITBIT_ACCESS_TOKEN")
+        self.refresh_token = os.getenv("FITBIT_REFRESH_TOKEN")
+
+        print(f"🔑 Fitbit API initialisiert mit access token: {self.access_token}")
+
         self.token_url = "https://api.fitbit.com/oauth2/token"
         self.base_url = "https://api.fitbit.com/1.2/user/-"
-        self.update_access_token()
+
+        # Falls kein Access Token vorhanden ist, direkt erneuern
+        if not self.access_token:
+            self.update_access_token()
 
     def update_access_token(self):
-        """Erneuert den Access Token mit dem Refresh Token."""
+        """Erneuert den Access Token mit dem gespeicherten Refresh Token."""
+        if not self.refresh_token:
+            print("❌ Kein gültiger Refresh Token vorhanden. Bitte neu authentifizieren.")
+            return
+
         auth_header = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
 
         headers = {
@@ -33,22 +47,37 @@ class FitbitAPI:
             tokens = response.json()
             self.access_token = tokens["access_token"]
             self.refresh_token = tokens["refresh_token"]
-            print("🔄 Neuer Access Token abgerufen.")
+            self.save_tokens()  # Speichert beide Tokens
+            print("🔄 Neuer Access Token und Refresh Token gespeichert.")
         else:
             print("❌ Fehler beim Erneuern des Access Tokens:", response.json())
+
+    def save_tokens(self):
+        """Speichert den neuen Access Token und Refresh Token in der .env Datei."""
+        with open(self.env_file, "r") as file:
+            lines = file.readlines()
+
+        with open(self.env_file, "w") as file:
+            for line in lines:
+                if line.startswith("FITBIT_ACCESS_TOKEN="):
+                    file.write(f"FITBIT_ACCESS_TOKEN={self.access_token}\n")
+                elif line.startswith("FITBIT_REFRESH_TOKEN="):
+                    file.write(f"FITBIT_REFRESH_TOKEN={self.refresh_token}\n")
+                else:
+                    file.write(line)
+
+        # Aktualisierte Werte direkt in die Umgebung laden
+        load_dotenv(self.env_file, override=True)
 
     def make_request(self, endpoint):
         """Sendet eine API-Anfrage und erneuert den Token, falls erforderlich."""
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
 
-        if response.status_code == 401: 
+        if response.status_code == 401:  # Ungültiger Token -> Token erneuern und erneut versuchen
             print("⚠️ Access Token abgelaufen. Erneuere Token...")
             self.update_access_token()
-            
-            headers = {
-                "Authorization": f"Bearer {self.access_token}"
-            }
+            headers["Authorization"] = f"Bearer {self.access_token}"
             
             response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
 
@@ -66,13 +95,7 @@ class FitbitAPI:
         endpoint = f"/sleep/date/{date}.json"
         return self.make_request(endpoint)
 
-# ✅ Beispielhafte Verwendung:
 if __name__ == "__main__":
-    CLIENT_ID = "23Q7M4"
-    CLIENT_SECRET = "947c845230815506bf6b4995cd093b44"
-    REFRESH_TOKEN = "74c92cfd0d3cc700904496ab2f23f681f9813cf141be526c19a89bc590a6b79c"
-    ACCESS_TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyM1E3TTQiLCJzdWIiOiI1VE1TR1YiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJyc2xlIiwiZXhwIjoxNzQwMDY3Mjc2LCJpYXQiOjE3NDAwMzg0NzZ9.QFzL3j6dT7JumEac1l0PRNfRX7SxDMLkCZIl7-1MXyw"
-
-    fitbit = FitbitAPI(CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN, ACCESS_TOKEN)
+    fitbit = FitbitAPI()
     sleep_data = fitbit.get_sleep_data()
     print(sleep_data)
