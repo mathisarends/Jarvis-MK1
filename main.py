@@ -17,14 +17,13 @@ try:
             text = speech_recognizer.transcribe_audio(audio_file)
             print(text)
             
-            if text is None:
-                continue
-            
-            print(f"🗣 Erkannt: {text}")
+            if text:
+                print(f"🗣 Erkannt: {text}")
 
-            # Das Sprechen hier bricht wirklich immer den ganzne Prozess ab ich weiß nicht woran das liegt ich kann da noch 
-            # so viele Wrapper drum bauen
-            chat_assistant.speak_response(text)
+                # Das Sprechen hier bricht wirklich immer den ganzne Prozess ab ich weiß nicht woran das liegt ich kann da noch 
+                # so viele Wrapper drum bauen
+                chat_assistant.speak_response(text)
+
 
 except KeyboardInterrupt:
     print("🛑 Manuelles Beenden.")
