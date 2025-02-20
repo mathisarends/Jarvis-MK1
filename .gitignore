@@ -15,3 +15,5 @@ temp
 # Gmail API sensitive files
 google_api/credentials.json
 google_api/token.pickle
+
+.cache
