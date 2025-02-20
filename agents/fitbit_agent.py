@@ -47,7 +47,7 @@ class FitbitAPI:
             tokens = response.json()
             self.access_token = tokens["access_token"]
             self.refresh_token = tokens["refresh_token"]
-            self.save_tokens()  # Speichert beide Tokens
+            self.save_tokens()  # Speichert beide Tokens 
             print("🔄 Neuer Access Token und Refresh Token gespeichert.")
         else:
             print("❌ Fehler beim Erneuern des Access Tokens:", response.json())
@@ -94,7 +94,9 @@ class FitbitAPI:
             date = datetime.date.today().strftime("%Y-%m-%d")
 
         endpoint = f"/sleep/date/{date}.json"
-        return self.make_request(endpoint)
+        sleep_data =  self.make_request(endpoint)
+        if sleep_data and "summary" in sleep_data:
+            return sleep_data["summary"]
     
     def find_project_root(self):
         """Sucht nach dem Root-Ordner des Projekts, indem nach typischen Projektdateien gesucht wird."""
@@ -103,7 +105,7 @@ class FitbitAPI:
             if ".git" in os.listdir(current_dir) or ".env" in os.listdir(current_dir):  
                 return current_dir
             current_dir = os.path.dirname(current_dir)  
-        return os.getcwd()  
+        return os.getcwd()
 
 
 if __name__ == "__main__":

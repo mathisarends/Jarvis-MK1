@@ -5,11 +5,8 @@ import asyncio
 from agents.location_finder import LocationFinder
 
 class WeatherClient:
-    def __init__(self, city: Optional[str] = None):
-        if city is not None:
-            self.city = city
-        else: 
-            self.city = LocationFinder.get_location()
+    def __init__(self):
+        self.city = LocationFinder.get_location()
 
     async def _fetch_weather(self):
         """Fetches weather data asynchronously."""
@@ -26,6 +23,7 @@ class WeatherClient:
 
         output = []
         
+        output.append(f"Wetter in {self.city}:")
         output.append(f"Aktuelle Temperatur: {weather.temperature}°C")
 
         for daily in weather:
