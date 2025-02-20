@@ -5,16 +5,16 @@ import os
 from dotenv import load_dotenv
 
 class FitbitAPI:
-    def __init__(self, env_file=".env"):
-        """Initialisiert die Fitbit API mit OAuth2-Authentifizierung und lädt Werte aus der .env Datei."""
-        load_dotenv()
+    def __init__(self):
+        """Liest die .env Datei aus dem Projekt-Root unabhängig von der Ordnerstruktur aus."""
+        project_root = self.find_project_root()
+        self.env_path = os.path.join(project_root, ".env")
+        load_dotenv(self.env_path)
 
         self.client_id = os.getenv("FITBIT_CLIENT_ID")
         self.client_secret = os.getenv("FITBIT_CLIENT_SECRET")
         self.access_token = os.getenv("FITBIT_ACCESS_TOKEN")
         self.refresh_token = os.getenv("FITBIT_REFRESH_TOKEN")
-
-        print(f"🔑 Fitbit API initialisiert mit access token: {self.access_token}")
 
         self.token_url = "https://api.fitbit.com/oauth2/token"
         self.base_url = "https://api.fitbit.com/1.2/user/-"
@@ -54,10 +54,11 @@ class FitbitAPI:
 
     def save_tokens(self):
         """Speichert den neuen Access Token und Refresh Token in der .env Datei."""
-        with open(self.env_file, "r") as file:
+
+        with open(self.env_path, "r") as file:
             lines = file.readlines()
 
-        with open(self.env_file, "w") as file:
+        with open(self.env_path, "w") as file:
             for line in lines:
                 if line.startswith("FITBIT_ACCESS_TOKEN="):
                     file.write(f"FITBIT_ACCESS_TOKEN={self.access_token}\n")
@@ -66,15 +67,15 @@ class FitbitAPI:
                 else:
                     file.write(line)
 
-        # Aktualisierte Werte direkt in die Umgebung laden
-        load_dotenv(self.env_file, override=True)
+        load_dotenv(self.env_path, override=True)
+        print("✅ Tokens erfolgreich in .env gespeichert und neu geladen.")
 
     def make_request(self, endpoint):
         """Sendet eine API-Anfrage und erneuert den Token, falls erforderlich."""
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
 
-        if response.status_code == 401:  # Ungültiger Token -> Token erneuern und erneut versuchen
+        if response.status_code == 401:  
             print("⚠️ Access Token abgelaufen. Erneuere Token...")
             self.update_access_token()
             headers["Authorization"] = f"Bearer {self.access_token}"
@@ -94,6 +95,16 @@ class FitbitAPI:
 
         endpoint = f"/sleep/date/{date}.json"
         return self.make_request(endpoint)
+    
+    def find_project_root(self):
+        """Sucht nach dem Root-Ordner des Projekts, indem nach typischen Projektdateien gesucht wird."""
+        current_dir = os.getcwd()
+        while current_dir != os.path.dirname(current_dir):  
+            if ".git" in os.listdir(current_dir) or ".env" in os.listdir(current_dir):  
+                return current_dir
+            current_dir = os.path.dirname(current_dir)  
+        return os.getcwd()  
+
 
 if __name__ == "__main__":
     fitbit = FitbitAPI()
