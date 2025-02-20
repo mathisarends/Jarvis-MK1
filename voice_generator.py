@@ -7,7 +7,7 @@ import pygame
 import threading
 
 class VoiceGenerator:
-    def __init__(self, voice="sage"):
+    def __init__(self, voice="ash"):
         """Initializes the TTS generator with OpenAI API and adjustable speed"""
         self.openai = OpenAI()
         self.voice = voice

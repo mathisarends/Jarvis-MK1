@@ -9,7 +9,7 @@ from agents.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 
 class OpenAIChatAssistant:
-    def __init__(self, voice="sage", model="gpt-4o-mini", history_limit=5):
+    def __init__(self, voice="fable", model="gpt-4o-mini", history_limit=5):
         """Initialisiert den Chat-Assistenten mit OpenAI API, TTS und Function Calling"""
         self.openai = OpenAI()
         self.model = model

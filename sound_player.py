@@ -1,12 +1,6 @@
-import os
 import threading
-import numpy as np
 import pygame
-import pvporcupine
-import pyaudio
-from dotenv import load_dotenv
 from pydub import AudioSegment
-from pydub.playback import play
 from io import BytesIO
 
 class SoundPlayer:

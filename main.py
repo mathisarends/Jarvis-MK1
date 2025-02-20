@@ -10,20 +10,24 @@ chat_assistant = OpenAIChatAssistant()
 try:
     while True:
         if wakeword_listener.listen_for_wakeword():
-            # ✅ Aufnahme starten & als MP3 speichern
-            audio_file = speech_recognizer.record_audio()
-
-            # ✅ Transkription mit OpenAI Whisper API
-            text = speech_recognizer.transcribe_audio(audio_file)
-            print(text)
+            # Pausiere Wake-Word-Erkennung während der Aufnahme und Verarbeitung
+            wakeword_listener.pause_listening()
             
-            if text:
-                print(f"🗣 Erkannt: {text}")
+            try:
+                # ✅ Aufnahme starten & als MP3 speichern
+                audio_file = speech_recognizer.record_audio()
 
-                # Das Sprechen hier bricht wirklich immer den ganzne Prozess ab ich weiß nicht woran das liegt ich kann da noch 
-                # so viele Wrapper drum bauen
-                chat_assistant.speak_response(text)
-
+                # ✅ Transkription mit OpenAI Whisper API
+                text = speech_recognizer.transcribe_audio(audio_file)
+                print(text)
+                
+                if text:
+                    print(f"🗣 Erkannt: {text}")
+                    chat_assistant.speak_response(text)
+                    
+            finally:
+                # Stelle sicher, dass die Erkennung wieder aktiviert wird
+                wakeword_listener.resume_listening()
 
 except KeyboardInterrupt:
     print("🛑 Manuelles Beenden.")
