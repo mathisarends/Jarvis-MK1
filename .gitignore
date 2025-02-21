@@ -19,3 +19,5 @@ google_api/token.pickle
 **/credentials.json
 
 **/.cache/
+
+app.log

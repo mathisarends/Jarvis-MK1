@@ -6,12 +6,18 @@ import numpy as np
 from sound_player import SoundPlayer
 import threading
 import time
+import logging
 
 class WakeWordListener:
     """Erkennt das Wake-Word und gibt ein Signal aus."""
+    
+    logger = logging.getLogger(__name__)
 
     def __init__(self, wakeword="jarvis"):
         """Initialisiert die Wake-Word-Erkennung."""
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("🔧 Initialisiere Wake-Word Listener mit Wort: %s", wakeword)
+        
         self.wakeword = wakeword
         self.handle = pvporcupine.create(
             access_key=self.load_access_key(),

@@ -224,3 +224,21 @@
 2025-02-21 07:13:19,228 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-02-21 07:13:37,659 - DEBUG - Starting new HTTPS connection (1): api.fitbit.com:443
 2025-02-21 07:13:38,330 - DEBUG - https://api.fitbit.com:443 "GET /1.2/user/-/sleep/date/2025-02-21.json HTTP/1.1" 200 None
+2025-02-21 07:19:56,251 - DEBUG - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:19:56,361 - DEBUG - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:19:56,367 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 07:22:55 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:22:55 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:22:55 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 07:24:37 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:24:37 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:24:37 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 07:27:14 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:27:14 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:27:14 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 07:29:13 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:29:13 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:29:13 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 07:30:30 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 07:30:30 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 07:30:30 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
