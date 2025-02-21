@@ -10,8 +10,6 @@ import logging
 
 class WakeWordListener:
     """Erkennt das Wake-Word und gibt ein Signal aus."""
-    
-    logger = logging.getLogger(__name__)
 
     def __init__(self, wakeword="jarvis"):
         """Initialisiert die Wake-Word-Erkennung."""
@@ -50,7 +48,7 @@ class WakeWordListener:
             keyword_index = self.handle.process(pcm)
             
             if keyword_index >= 0:
-                print("🚀 Wake-Word erkannt!")
+                self.logger.info("🚀 Wake-Word erkannt!")
                 self._detection_event.set()
                 self.sound_player.play_listening_sound()
         
@@ -58,7 +56,7 @@ class WakeWordListener:
 
     def listen_for_wakeword(self):
         """Hört auf das Wake-Word und gibt True zurück, wenn erkannt."""
-        print("🎤 Warte auf Wake-Word...")
+        self.logger.info("🎤 Warte auf Wake-Word...")
         self.is_listening = True
         self.stream.start_stream()
         
@@ -72,7 +70,7 @@ class WakeWordListener:
 
     def cleanup(self):
         """Ressourcen aufräumen."""
-        print("🧹 Räume Wake-Word-Listener auf...")
+        self.logger.info("🧹 Räume Wake-Word-Listener auf...")
         self.should_stop = True
         self.is_listening = False
         
@@ -87,7 +85,7 @@ class WakeWordListener:
         if self.handle:
             self.handle.delete()
         
-        print("✅ Wake-Word-Listener erfolgreich beendet")
+        self.logger.info("✅ Wake-Word-Listener erfolgreich beendet")
         
     def load_access_key(self):
         """Lädt den Picovoice Access Key aus der Umgebungsvariable."""

@@ -242,3 +242,29 @@
 2025-02-21 07:30:30 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
 2025-02-21 07:30:30 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
 2025-02-21 07:30:30 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 08:02:30 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 08:02:31 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 08:02:31 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 08:04:29 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 08:04:29 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 08:04:29 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 08:07:18 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 08:07:18 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 08:07:18 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): oauth2.googleapis.com:443
+2025-02-21 08:07:18 - DEBUG - urllib3.connectionpool - _make_request - https://oauth2.googleapis.com:443 "POST /token HTTP/1.1" 200 None
+2025-02-21 08:07:18 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 19:02:45 - INFO - spotipy.oauth2 - get_auth_response - User authentication requires interaction with your web browser. Once you enter your credentials and give authorization, you will be redirected to a url.  Paste that url you were directed to to complete the authorization.
+2025-02-21 19:02:45 - INFO - spotipy.oauth2 - _open_auth_url - Opened https://accounts.spotify.com/authorize?client_id=b27dc6adbe754292b526f869db208108&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-modify-playback-state+user-read-playback-state in your browser
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): accounts.spotify.com:443
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _make_request - https://accounts.spotify.com:443 "POST /api/token HTTP/1.1" 200 None
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): oauth2.googleapis.com:443
+2025-02-21 19:02:46 - DEBUG - urllib3.connectionpool - _make_request - https://oauth2.googleapis.com:443 "POST /token HTTP/1.1" 200 None
+2025-02-21 19:02:46 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 19:03:32 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 19:03:32 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 19:03:32 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 19:03:56 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 19:03:56 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 19:03:56 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
