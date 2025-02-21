@@ -16,4 +16,6 @@ temp
 google_api/credentials.json
 google_api/token.pickle
 
-.cache
+**/credentials.json
+
+**/.cache/

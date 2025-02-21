@@ -4,7 +4,7 @@ import asyncio
 from openai import OpenAI
 from voice_generator import VoiceGenerator
 from agents.weather_agent import WeatherClient
-from agents.fitbit_agent import FitbitAPI
+from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 from google_api.gmail_reader import GmailReader
 
