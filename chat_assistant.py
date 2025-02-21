@@ -7,6 +7,7 @@ from agents.weather_agent import WeatherClient
 from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 from google_api.gmail_reader import GmailReader
+from agents.notion_agent import NotionAgent
 
 class OpenAIChatAssistant:
     def __init__(self, voice="fable", model="gpt-4o-mini", history_limit=5):
@@ -18,6 +19,7 @@ class OpenAIChatAssistant:
         self.fitbit_api = FitbitAPI()
         self.spotify_player = SpotifyPlayer()
         self.gmail_reader = GmailReader()
+        self.notion_agent = NotionAgent()
 
         # Definition der verfügbaren Funktionen für das Modell
         self.tools = [
@@ -77,6 +79,37 @@ class OpenAIChatAssistant:
                         "additionalProperties": False
                     },
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_notion_tasks",
+                    "description": "Retrieves a list of tasks from the Notion database.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": False
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "add_notion_task",
+                    "description": "Adds a new task to the Notion database.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "task_name": {
+                                "type": "string",
+                                "description": "The name of the task to add to the Notion database."
+                            }
+                        },
+                        "required": ["task_name"],
+                        "strict": True
+                    }
+                }
             }
         ]
 
@@ -90,6 +123,8 @@ class OpenAIChatAssistant:
             "2. A Fitbit function that pulls sleep data and breaks it down without getting all clinical about it.\n"
             "3. A Spotify function that lets you play music by searching for songs and artists.\n"
             "4. A Gmail function that fetches the latest unread emails from the primary inbox.\n"
+            "5. A Notion function that can fetch a list of tasks from a database."
+            "It can also add new tasks when requested."
             "When reporting emails, summarize key details: Subject, Sender, and Timestamp. "
             "Do not read entire emails unless explicitly requested."
         )
@@ -133,6 +168,16 @@ class OpenAIChatAssistant:
 
         elif function_name == "get_unread_emails":
             return self._get_unread_emails()
+        
+        elif function_name == "get_notion_tasks":
+            return self.notion_agent.get_database_entries_and_delete_completed()
+
+        elif function_name == "add_notion_task":
+            task_name = arguments.get("task_name")
+            if task_name:
+                self.notion_agent.add_database_entry(task_name)
+                return f"Task '{task_name}' added to Notion."
+            return "No task name provided."
 
         else:
             raise ValueError(f"Unknown function: {function_name}")

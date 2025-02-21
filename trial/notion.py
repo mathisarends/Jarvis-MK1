@@ -1,11 +1,12 @@
 import os
 import requests
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
 NOTION_TOKEN = os.getenv("NOTION_SECRET")
-PAGE_ID = "608a67e42e3a469eb17925e8bf075a33"
+PAGE_ID = "19c389d57bd380dbb009efe9e5937399"
 
 
 HEADERS = {
@@ -35,22 +36,89 @@ def list_accessible_databases():
     else:
         print("❌ Fehler beim Abrufen der Datenbanken:", response.text)
 
-# Test ausführen
-list_accessible_databases()
+DATABASE_ID = "1a1389d5-7bd3-80b7-9980-ca8ebd734ce2" 
 
-DATABASE_ID = "dc242d1e-94bc-45c9-a330-75b0bf18663a" 
-
-def get_database_details():
-    """Holt die Struktur der Notion-Datenbank, um zu sehen, welche Spalten sie hat."""
-    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}"
+def get_database_entries_and_delete_completed():
+    """Listet alle Einträge aus einer Notion-Datenbank auf und löscht die, die bereits erledigt sind (Kontrollkästchen=True)."""
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
     
-    response = requests.get(url, headers=HEADERS)
+    response = requests.post(url, headers=HEADERS)
     
     if response.status_code == 200:
-        print("✅ Erfolgreich! Hier sind die Details der Datenbank:\n")
-        print(response.json())  # Zeigt alle Eigenschaften der Datenbank
+        entries = response.json()["results"]
+
+        if not entries:
+            print("ℹ️ Keine Einträge in der Datenbank gefunden.")
+            return
+        
+        print("\n📌 **Datenbank-Einträge:**")
+        for entry in entries:
+            properties = entry["properties"]
+            page_id = entry["id"]  # Die ID des Eintrags zum Löschen
+
+            # Kontrollkästchen-Status abrufen (Standard: False)
+            erledigt = properties.get("Kontrollkästchen", {}).get("checkbox", False)
+            
+            # Wenn der Eintrag als erledigt markiert ist, lösche ihn
+            if erledigt:
+                delete_page(page_id)
+                continue  # Überspringt den gelöschten Eintrag
+
+            # Titel extrahieren
+            title_property = properties["Idee"]["title"]
+            title = title_property[0]["text"]["content"] if title_property else "Unbenannter Eintrag"
+
+            # Status abrufen
+            status = properties["Status"]["status"]["name"] if "Status" in properties else "Kein Status"
+
+            # Priorität abrufen
+            priorität = properties["Priorität"]["select"]["name"] if "Priorität" in properties and properties["Priorität"]["select"] else "Keine Priorität"
+
+            print(f"- {title} (Status: {status} | Priorität: {priorität})")
     else:
-        print("❌ Fehler beim Abrufen der Datenbank:", response.text)
+        print("❌ Fehler beim Abrufen der Einträge:", response.text)
+
+
+def delete_page(page_id: str):
+    """Löscht eine Seite (Eintrag) aus Notion."""
+    url = f"https://api.notion.com/v1/pages/{page_id}"
+    data = {"archived": True}  # Setzt die Seite auf archiviert (Notion erlaubt kein direktes Löschen)
+
+    response = requests.patch(url, headers=HEADERS, json=data)
+
+    if response.status_code == 200:
+        print(f"🗑️ Erfolgreich gelöscht: {page_id}")
+    else:
+        print(f"❌ Fehler beim Löschen von {page_id}: {response.text}")
+
 
 # Test ausführen
-get_database_details()
+get_database_entries_and_delete_completed()
+
+def add_database_entry(idea: str):
+    """Fügt einen neuen Eintrag zur Notion-Datenbank hinzu."""
+    url = "https://api.notion.com/v1/pages"
+    status = "Neu"
+    priority = "Mittel"
+    
+    data = {
+        "parent": {"database_id": DATABASE_ID},
+        "properties": {
+            "Idee": {
+                "title": [{"text": {"content": f"💡 {idea}"}}]
+            },
+            "Status": {
+                "status": {"name": status}  
+            },
+            "Priorität": {
+                "select": {"name": priority}  
+            }
+        }
+    }
+    
+    response = requests.post(url, headers=HEADERS, json=data)
+    
+    if response.status_code == 200:
+        print(f"✅ Erfolgreich! Der Eintrag '{idea}' wurde hinzugefügt.")
+    else:
+        print("❌ Fehler beim Hinzufügen des Eintrags:", response.text)

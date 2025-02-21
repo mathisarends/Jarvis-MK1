@@ -268,3 +268,20 @@
 2025-02-21 19:03:56 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
 2025-02-21 19:03:56 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
 2025-02-21 19:03:56 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 20:10:48 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): accounts.spotify.com:443
+2025-02-21 20:10:48 - DEBUG - urllib3.connectionpool - _make_request - https://accounts.spotify.com:443 "POST /api/token HTTP/1.1" 200 None
+2025-02-21 20:10:48 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 20:10:49 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 20:10:49 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): oauth2.googleapis.com:443
+2025-02-21 20:10:49 - DEBUG - urllib3.connectionpool - _make_request - https://oauth2.googleapis.com:443 "POST /token HTTP/1.1" 200 None
+2025-02-21 20:10:49 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 20:10:49 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-21 20:11:11 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-21 20:11:11 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-21 20:11:11 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-21 20:11:11 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-21 20:11:21 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.notion.com:443
+2025-02-21 20:11:23 - DEBUG - urllib3.connectionpool - _make_request - https://api.notion.com:443 "POST /v1/databases/1a1389d5-7bd3-80b7-9980-ca8ebd734ce2/query HTTP/1.1" 200 None
+2025-02-21 20:12:15 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.notion.com:443
+2025-02-21 20:12:16 - DEBUG - urllib3.connectionpool - _make_request - https://api.notion.com:443 "POST /v1/pages HTTP/1.1" 200 None
+2025-02-21 20:12:16 - INFO - NotionAgent - add_database_entry - Successfully added entry: Mikrofon-Kaufen
