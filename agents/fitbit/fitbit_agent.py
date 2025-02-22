@@ -128,6 +128,10 @@ class FitbitAPI:
         
         sleep_data = self.make_request(endpoint)
         return sleep_data.get("summary") if sleep_data else None
+    
+    def format_sleep_data(self, sleep_data):
+        
+        
 
     def request_new_access_token(self, auth_code: str) -> bool:
         """

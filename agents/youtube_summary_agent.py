@@ -6,11 +6,12 @@ import openai
 # Lade Umgebungsvariablen aus der .env-Datei
 load_dotenv()
 
-class YoutubeAgent:
+class YoutubeSummaryAgent:
     def __init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         openai.api_key = self.openai_api_key
 
+    # TODO: hier noch selber eine Summary machen mit dem OPEN AI
     def get_transcript(self, video_url):
         video_id = self._extract_video_id(video_url)
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
@@ -42,7 +43,7 @@ class YoutubeAgent:
         return video_url.split("v=")[-1].split("&")[0]
 
 if __name__ == "__main__":
-    agent = YoutubeAgent()
+    agent = YoutubeSummaryAgent()
 
     video_url = "https://www.youtube.com/watch?v=8urzOH10LEM&ab_channel=AliAbdaal"
 

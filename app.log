@@ -339,3 +339,27 @@
 2025-02-21 20:37:54 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.notion.com:443
 2025-02-21 20:37:55 - DEBUG - urllib3.connectionpool - _make_request - https://api.notion.com:443 "POST /v1/pages HTTP/1.1" 200 None
 2025-02-21 20:37:55 - INFO - NotionAgent - add_database_entry - Successfully added entry: Iron-Man-Maske für Raspberry Pi kaufen
+2025-02-22 08:20:55 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): accounts.spotify.com:443
+2025-02-22 08:20:55 - DEBUG - urllib3.connectionpool - _make_request - https://accounts.spotify.com:443 "POST /api/token HTTP/1.1" 200 None
+2025-02-22 08:20:55 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 08:20:55 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 08:21:26 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 08:21:26 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 08:21:26 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 08:21:48 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 08:21:48 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 08:21:48 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 08:22:04 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 08:22:04 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 08:22:04 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 08:25:24 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 08:25:25 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 08:25:25 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 08:25:34 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.fitbit.com:443
+2025-02-22 08:25:34 - DEBUG - urllib3.connectionpool - _make_request - https://api.fitbit.com:443 "GET /1.2/user/-/sleep/date/2025-02-22.json HTTP/1.1" 401 None
+2025-02-22 08:25:34 - INFO - agents.fitbit.fitbit_agent - make_request - Token expired, attempting renewal
+2025-02-22 08:25:34 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.fitbit.com:443
+2025-02-22 08:25:35 - DEBUG - urllib3.connectionpool - _make_request - https://api.fitbit.com:443 "POST /oauth2/token HTTP/1.1" 200 None
+2025-02-22 08:25:35 - INFO - agents.fitbit.fitbit_agent - _update_access_token - Access token successfully renewed
+2025-02-22 08:25:35 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.fitbit.com:443
+2025-02-22 08:25:35 - DEBUG - urllib3.connectionpool - _make_request - https://api.fitbit.com:443 "GET /1.2/user/-/sleep/date/2025-02-22.json HTTP/1.1" 200 None
