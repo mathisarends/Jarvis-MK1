@@ -1,7 +1,4 @@
-import os
-from typing import Optional
 import python_weather
-import asyncio
 from agents.location_finder import LocationFinder
 
 class WeatherClient:

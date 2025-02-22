@@ -4,7 +4,6 @@ import asyncio
 from openai import OpenAI
 from agents.tools.weather.weather_tool import WeatherTool
 from voice_generator import VoiceGenerator
-from agents.weather_agent import WeatherClient
 from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 from google_api.gmail_reader.gmail_reader import GmailReader
@@ -125,25 +124,14 @@ class OpenAIChatAssistant:
         
     def _initialize_tools(self):
         """Initialize and register all available tools"""
-        weather_client = WeatherClient()
-        self.tool_registry.register_tool(WeatherTool(weather_client))
-        
-
-    async def _execute_weather_function(self):
-        """Führt die Wetterabfrage asynchron aus"""
-        weather_client = WeatherClient()
-        return await weather_client.fetch_weather_data()
+        self.tool_registry.register_tool(WeatherTool())
 
     def _execute_function(self, function_call):
         """Führt die aufgerufene Funktion aus und gibt das Ergebnis zurück"""
         function_name = function_call.function.name
         arguments = json.loads(function_call.function.arguments)
 
-        if function_name == "get_weather":
-            weather_data = asyncio.run(self._execute_weather_function())
-            return "\n".join(weather_data)
-
-        elif function_name == "get_sleep_data":
+        if function_name == "get_sleep_data":
             sleep_data = self.fitbit_api.get_sleep_data()
             if sleep_data:
                 summary = [

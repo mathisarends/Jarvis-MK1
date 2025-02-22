@@ -2,10 +2,11 @@ from typing import Dict, Any
 
 from agents.tools.core.tool_definition import ToolDefinition
 from agents.tools.core.tool_registry import Tool
+from agents.tools.weather.weather_client import WeatherClient
 
 class WeatherTool(Tool):
-    def __init__(self, weather_client):
-        self.weather_client = weather_client
+    def __init__(self):
+        self.weather_client = WeatherClient()
         super().__init__()
 
     def get_definition(self) -> ToolDefinition:
