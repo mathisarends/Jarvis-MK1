@@ -371,3 +371,15 @@
 2025-02-22 10:21:00 - INFO - NotionAgent - __init__ - NotionManager initialized.
 2025-02-22 10:21:10 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.fitbit.com:443
 2025-02-22 10:21:11 - DEBUG - urllib3.connectionpool - _make_request - https://api.fitbit.com:443 "GET /1.2/user/-/sleep/date/2025-02-22.json HTTP/1.1" 200 None
+2025-02-22 10:34:15 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 10:34:15 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 10:34:15 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-22 10:34:15 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 10:34:15 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): ipinfo.io:443
+2025-02-22 10:34:15 - DEBUG - urllib3.connectionpool - _make_request - https://ipinfo.io:443 "GET /json HTTP/1.1" 200 None
+2025-02-22 10:36:22 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): api.spotify.com:443
+2025-02-22 10:36:22 - DEBUG - urllib3.connectionpool - _make_request - https://api.spotify.com:443 "GET /v1/me/player/devices HTTP/1.1" 200 None
+2025-02-22 10:36:22 - INFO - googleapiclient.discovery_cache - autodetect - file_cache is only supported with oauth2client<4.0.0
+2025-02-22 10:36:22 - INFO - NotionAgent - __init__ - NotionManager initialized.
+2025-02-22 10:36:22 - DEBUG - urllib3.connectionpool - _new_conn - Starting new HTTPS connection (1): ipinfo.io:443
+2025-02-22 10:36:22 - DEBUG - urllib3.connectionpool - _make_request - https://ipinfo.io:443 "GET /json HTTP/1.1" 200 None

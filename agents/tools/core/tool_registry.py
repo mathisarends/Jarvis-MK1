@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
-from tool_definition import ToolDefinition
+from agents.tools.core.tool_definition import ToolDefinition
 
 class Tool(ABC):
     def __init__(self):

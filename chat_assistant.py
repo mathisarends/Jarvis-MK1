@@ -2,12 +2,15 @@ from collections import deque
 import json
 import asyncio
 from openai import OpenAI
+from agents.tools.weather.weather_tool import WeatherTool
 from voice_generator import VoiceGenerator
 from agents.weather_agent import WeatherClient
 from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 from google_api.gmail_reader.gmail_reader import GmailReader
 from agents.notion_agent import NotionAgent
+
+from agents.tools.core.tool_registry import ToolRegistry
 
 class OpenAIChatAssistant:
     def __init__(self, voice="fable", model="gpt-4o-mini", history_limit=5):
@@ -20,22 +23,11 @@ class OpenAIChatAssistant:
         self.spotify_player = SpotifyPlayer()
         self.gmail_reader = GmailReader()
         self.notion_agent = NotionAgent()
+        
+        self.tool_registry = ToolRegistry()
 
         # Definition der verfügbaren Funktionen für das Modell
         self.tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_weather",
-                    "description": "Get current temperature and hourly forecast for the user's location.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                        "additionalProperties": False
-                    },
-                }
-            },
             {
                 "type": "function",
                 "function": {
@@ -128,6 +120,14 @@ class OpenAIChatAssistant:
             "When reporting emails, summarize key details: Subject, Sender, and Timestamp. "
             "Do not read entire emails unless explicitly requested."
         )
+        
+        self._initialize_tools()
+        
+    def _initialize_tools(self):
+        """Initialize and register all available tools"""
+        weather_client = WeatherClient()
+        self.tool_registry.register_tool(WeatherTool(weather_client))
+        
 
     async def _execute_weather_function(self):
         """Führt die Wetterabfrage asynchron aus"""
@@ -191,8 +191,8 @@ class OpenAIChatAssistant:
 
         return "\n".join(messages)
 
-    def get_response(self, user_input):
-        """Sendet den Text an OpenAI GPT mit Function Calling Support"""
+    async def get_response(self, user_input: str) -> str:
+        """Sends text to OpenAI GPT with support for both legacy and new tools"""
         try:
             messages = [{"role": "system", "content": self.system_prompt}]
             for user_msg, ai_msg in self.history:
@@ -201,17 +201,33 @@ class OpenAIChatAssistant:
 
             messages.append({"role": "user", "content": user_input})
 
+            # Combine both legacy tools and new registry tools
+            all_tools = [
+                *self.tools,  # Legacy tools
+                *self.tool_registry.get_all_definitions()  # New registry tools
+            ]
+
             response = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                tools=self.tools
+                tools=all_tools
             )
 
             assistant_message = response.choices[0].message
 
             if assistant_message.tool_calls:
                 for tool_call in assistant_message.tool_calls:
-                    function_response = self._execute_function(tool_call)
+                    # Try new registry first
+                    tool = self.tool_registry.get_tool(tool_call.function.name)
+                    if tool:
+                        # Execute new-style tool
+                        function_response = await tool.execute(
+                            json.loads(tool_call.function.arguments)
+                        )
+                    else:
+                        # Fall back to legacy tool execution
+                        function_response = self._execute_function(tool_call)
+
                     messages.append(assistant_message)
                     messages.append({
                         "role": "tool",
@@ -219,10 +235,11 @@ class OpenAIChatAssistant:
                         "content": function_response
                     })
 
+                # Get final response after tool execution
                 second_response = self.openai.chat.completions.create(
                     model=self.model,
                     messages=messages,
-                    tools=self.tools
+                    tools=all_tools  # Use combined tools again
                 )
                 
                 final_response = second_response.choices[0].message.content
@@ -236,7 +253,7 @@ class OpenAIChatAssistant:
             print(f"❌ OpenAI request failed: {e}")
             return "An error occurred during processing."
 
-    def speak_response(self, user_input):
+    async def speak_response(self, user_input):
         """Holt die GPT-Antwort und spricht sie aus"""
-        response = self.get_response(user_input)
+        response = await self.get_response(user_input)
         self.tts.speak(response)
