@@ -1,11 +1,12 @@
 from collections import deque
 import json
 from openai import OpenAI
+from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
 from agents.tools.fitbit.sleep_tool import SleepTool
 from agents.tools.google.gmail_reader_tool import GmailReaderTool
 from voice_generator import VoiceGenerator
-from agents.spotify_player import SpotifyPlayer
+from agents.tools.spotify.spotify_player import SpotifyPlayer
 from agents.notion_agent import NotionAgent
 
 from agents.tools.core.tool_registry import ToolRegistry
@@ -24,24 +25,6 @@ class OpenAIChatAssistant:
 
         # Definition der verfügbaren Funktionen für das Modell
         self.tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "play_song",
-                    "description": "Plays a song on Spotify by searching for the specified track and artist.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "The song title and optionally the artist. Example: 'Blinding Lights by The Weeknd'"
-                            }
-                        },
-                        "required": ["query"],
-                        "strict": True
-                    }
-                }
-            },
             {
                 "type": "function",
                 "function": {
@@ -98,20 +81,14 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(WeatherTool())
         self.tool_registry.register_tool(SleepTool())
         self.tool_registry.register_tool(GmailReaderTool())
+        self.tool_registry.register_tool(SpotifyTool())
 
     def _execute_function(self, function_call):
         """Führt die aufgerufene Funktion aus und gibt das Ergebnis zurück"""
         function_name = function_call.function.name
         arguments = json.loads(function_call.function.arguments)
 
-        if function_name == "play_song":
-            query = arguments.get("query")
-            if query:
-                self.spotify_player.play_track(query)
-                return f"Playing {query} on Spotify."
-            return "No song specified."
-        
-        elif function_name == "get_notion_tasks":
+        if function_name == "get_notion_tasks":
             return self.notion_agent.get_database_entries_and_delete_completed()
 
         elif function_name == "add_notion_task":
