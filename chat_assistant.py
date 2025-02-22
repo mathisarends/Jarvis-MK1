@@ -6,7 +6,7 @@ from voice_generator import VoiceGenerator
 from agents.weather_agent import WeatherClient
 from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
-from google_api.gmail_reader import GmailReader
+from google_api.gmail_reader.gmail_reader import GmailReader
 from agents.notion_agent import NotionAgent
 
 class OpenAIChatAssistant:

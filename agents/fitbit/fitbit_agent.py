@@ -14,8 +14,6 @@ class FitbitAPI:
     BASE_URL = "https://api.fitbit.com/1.2/user/-"
     
     def __init__(self):
-        """Initialize the FitbitAPI with credentials and tokens."""
-        # Setup logging
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
@@ -24,7 +22,6 @@ class FitbitAPI:
         self._initialize_tokens()
         
     def _setup_credentials(self) -> None:
-        """Set up client credentials from environment variables."""
         load_dotenv()
         self.client_id = os.getenv("FITBIT_CLIENT_ID")
         self.client_secret = os.getenv("FITBIT_CLIENT_SECRET")
@@ -34,13 +31,11 @@ class FitbitAPI:
             raise ValueError("Missing Fitbit API credentials in environment variables")
 
     def _initialize_tokens(self) -> None:
-        """Initialize access and refresh tokens."""
         self.access_token, self.refresh_token = self._load_tokens()
         if not self.access_token:
             self._update_access_token()
 
     def _load_tokens(self) -> Tuple[Optional[str], Optional[str]]:
-        """Load tokens from credentials file."""
         try:
             with open(self.credentials_path, "r") as file:
                 data = json.load(file)
@@ -50,7 +45,6 @@ class FitbitAPI:
             return None, None
 
     def _save_tokens(self) -> None:
-        """Save current tokens to credentials file."""
         data = {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token
@@ -60,7 +54,6 @@ class FitbitAPI:
         self.logger.debug("Tokens saved to credentials.json")
 
     def _get_auth_header(self) -> Dict[str, str]:
-        """Generate authorization header for API requests."""
         auth_string = base64.b64encode(
             f"{self.client_id}:{self.client_secret}".encode()
         ).decode()
@@ -70,7 +63,6 @@ class FitbitAPI:
         }
 
     def _update_access_token(self) -> bool:
-        """Update access token using refresh token."""
         if not self.refresh_token:
             self.logger.error("No valid refresh token available")
             return False
@@ -96,7 +88,6 @@ class FitbitAPI:
         return False
 
     def make_request(self, endpoint: str) -> Optional[Dict[str, Any]]:
-        """Make an authenticated request to the Fitbit API."""
         url = f"{self.BASE_URL}{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
@@ -129,10 +120,6 @@ class FitbitAPI:
         sleep_data = self.make_request(endpoint)
         return sleep_data.get("summary") if sleep_data else None
     
-    def format_sleep_data(self, sleep_data):
-        
-        
-
     def request_new_access_token(self, auth_code: str) -> bool:
         """
         Request a new access token using an authorization code.
