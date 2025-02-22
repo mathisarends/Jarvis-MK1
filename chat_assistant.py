@@ -3,9 +3,9 @@ import json
 from openai import OpenAI
 from agents.tools.weather.weather_tool import WeatherTool
 from agents.tools.fitbit.sleep_tool import SleepTool
+from agents.tools.google.gmail_reader_tool import GmailReaderTool
 from voice_generator import VoiceGenerator
 from agents.spotify_player import SpotifyPlayer
-from google_api.gmail_reader.gmail_reader import GmailReader
 from agents.notion_agent import NotionAgent
 
 from agents.tools.core.tool_registry import ToolRegistry
@@ -18,7 +18,6 @@ class OpenAIChatAssistant:
         self.tts = VoiceGenerator(voice=voice)
         self.history = deque(maxlen=history_limit)
         self.spotify_player = SpotifyPlayer()
-        self.gmail_reader = GmailReader()
         self.notion_agent = NotionAgent()
         
         self.tool_registry = ToolRegistry()
@@ -41,19 +40,6 @@ class OpenAIChatAssistant:
                         "required": ["query"],
                         "strict": True
                     }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_unread_emails",
-                    "description": "Fetches the latest unread emails from the primary inbox.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                        "additionalProperties": False
-                    },
                 }
             },
             {
@@ -111,6 +97,7 @@ class OpenAIChatAssistant:
         """Initialize and register all available tools"""
         self.tool_registry.register_tool(WeatherTool())
         self.tool_registry.register_tool(SleepTool())
+        self.tool_registry.register_tool(GmailReaderTool())
 
     def _execute_function(self, function_call):
         """Führt die aufgerufene Funktion aus und gibt das Ergebnis zurück"""
@@ -123,9 +110,6 @@ class OpenAIChatAssistant:
                 self.spotify_player.play_track(query)
                 return f"Playing {query} on Spotify."
             return "No song specified."
-
-        elif function_name == "get_unread_emails":
-            return self._get_unread_emails()
         
         elif function_name == "get_notion_tasks":
             return self.notion_agent.get_database_entries_and_delete_completed()
@@ -139,15 +123,6 @@ class OpenAIChatAssistant:
 
         else:
             raise ValueError(f"Unknown function: {function_name}")
-
-    def _get_unread_emails(self):
-        """Ruft ungelesene E-Mails aus der Kategorie 'Allgemein' ab"""
-        messages = self.gmail_reader.list_primary_unread_messages()
-
-        if not messages:
-            return "No unread emails found in the primary inbox."
-
-        return "\n".join(messages)
 
     async def get_response(self, user_input: str) -> str:
         """Sends text to OpenAI GPT with support for both legacy and new tools"""
