@@ -155,3 +155,9 @@ class FitbitAPI:
             
         self.logger.error(f"Failed to obtain new access token: {response.json()}")
         return False
+    
+    
+if __name__ == "__main__":
+    fitbit = FitbitAPI()
+    sleep_data = fitbit.get_sleep_data()
+    print(sleep_data)
