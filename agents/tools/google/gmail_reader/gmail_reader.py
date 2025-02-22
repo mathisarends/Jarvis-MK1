@@ -64,7 +64,6 @@ class GmailReader:
         else:
             body = payload["body"].get("data")
             mime_type = payload["mimeType"]
-            print("mime_type", mime_type)
 
         if body:
             decoded_content = base64.urlsafe_b64decode(body).decode("utf-8", errors="ignore")
@@ -108,8 +107,3 @@ class GmailReader:
             output_parts.append("\n".join(email_info))
 
         return "\n".join(output_parts)
-
-if __name__ == "__main__":
-    reader = GmailReader()
-    email_text = reader.list_primary_unread_messages(5)
-    print(email_text)  # Nur zum Testen

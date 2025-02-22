@@ -44,11 +44,7 @@ class GmailReaderTool(Tool):
                     email_behavior
                 )
 
-            formatted_messages = [
-                f"{i + 1}. {message}" for i, message in enumerate(messages)
-            ]
-
-            return ToolResponse("\n".join(formatted_messages), email_behavior)
+            return ToolResponse(messages, email_behavior)
 
         except Exception as e:
             return ToolResponse(f"Error fetching unread emails: {str(e)}", email_behavior)
