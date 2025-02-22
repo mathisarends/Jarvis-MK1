@@ -1,12 +1,11 @@
 import os
 import requests
-import json
 import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class NotionAgent:
+class NotionClient:
     NOTION_TOKEN = os.getenv("NOTION_SECRET")
     DATABASE_ID = "1a1389d5-7bd3-80b7-9980-ca8ebd734ce2"
 

@@ -1,7 +1,9 @@
 from typing import Dict, Any
+
 from agents.tools.core.tool_definition import ToolDefinition
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_parameter import ToolParameter
+from agents.tools.core.tool_response import ToolResponse
 from agents.tools.spotify.spotify_player import SpotifyPlayer
 
 class SpotifyTool(Tool):
@@ -22,14 +24,27 @@ class SpotifyTool(Tool):
             }
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> str:
+    async def execute(self, parameters: Dict[str, Any]) -> ToolResponse:
+        spotify_behavior = """
+        When controlling Spotify playback:
+        1. Confirm the requested song and artist before playing.
+        2. If no specific artist is provided, play the best-matching track.
+        3. Use phrases like "Now playing..." or "Starting playback for..."
+        4. If the song cannot be found, suggest checking the spelling or providing more details.
+        5. If playback fails due to authentication issues, notify the user and suggest re-linking Spotify.
+        """
+
         try:
             query = parameters.get("query")
             if not query:
-                return "No song specified. Please provide a song title and optionally an artist."
-            
+                return ToolResponse(
+                    "No song specified. Please provide a song title and optionally an artist.",
+                    spotify_behavior
+                )
+
             self.spotify_player.play_track(query)
-            return f"Playing {query} on Spotify."
+
+            return ToolResponse(f"Now playing: {query} on Spotify.", spotify_behavior)
 
         except Exception as e:
-            return f"Error playing song: {str(e)}"
+            return ToolResponse(f"Error playing song: {str(e)}", spotify_behavior)

@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
 from agents.tools.core.tool_definition import ToolDefinition
+from agents.tools.core.tool_response import ToolResponse
 
 class Tool(ABC):
     def __init__(self):
@@ -12,7 +13,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, parameters: Dict[str, Any]) -> str:
+    async def execute(self, parameters: Dict[str, Any]) -> ToolResponse:
         """Execute the tool's functionality with the given parameters"""
         pass
 

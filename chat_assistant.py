@@ -43,7 +43,6 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(NotionTool())
 
     async def get_response(self, user_input: str) -> str:
-        """Sends text to OpenAI GPT with support for both legacy and new tools"""
         try:
             messages = [{"role": "system", "content": self.system_prompt}]
             for user_msg, ai_msg in self.history:
@@ -64,15 +63,21 @@ class OpenAIChatAssistant:
                 for tool_call in assistant_message.tool_calls:
                     tool = self.tool_registry.get_tool(tool_call.function.name)
                     if tool:
-                        function_response = await tool.execute(
+                        tool_response = await tool.execute(
                             json.loads(tool_call.function.arguments)
                         )
+                        
+                        if tool_response.behavior_instructions:
+                            messages[0] = {
+                                "role": "system",
+                                "content": f"{self.system_prompt}\n\n{tool_response.behavior_instructions}"
+                            }
 
                         messages.append(assistant_message)
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tool_call.id,
-                            "content": function_response
+                            "content": tool_response.content
                         })
 
                 second_response = self.openai.chat.completions.create(
@@ -87,6 +92,10 @@ class OpenAIChatAssistant:
 
             self.history.append((user_input, final_response))
             return final_response
+
+        except Exception as e:
+            print(f"❌ OpenAI request failed: {e}")
+            return "An error occurred during processing."
 
         except Exception as e:
             print(f"❌ OpenAI request failed: {e}")

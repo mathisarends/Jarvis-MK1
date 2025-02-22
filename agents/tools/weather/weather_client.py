@@ -1,5 +1,5 @@
 import python_weather
-from agents.location_finder import LocationFinder
+from agents.tools.weather.location_finder import LocationFinder
 
 class WeatherClient:
     def __init__(self):
