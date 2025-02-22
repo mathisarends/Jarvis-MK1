@@ -4,10 +4,11 @@ from datetime import date
 from agents.tools.core.tool_definition import ToolDefinition
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_parameter import ToolParameter
+from agents.tools.fitbit.fitbit_client import FitbitClient
 
 class SleepTool(Tool):
-    def __init__(self, fitbit_api):
-        self.fitbit_api = fitbit_api
+    def __init__(self):
+        self.fitbit_api = FitbitClient()
         super().__init__()
 
     def get_definition(self) -> ToolDefinition:
@@ -25,23 +26,19 @@ class SleepTool(Tool):
 
     async def execute(self, parameters: Dict[str, Any]) -> str:
         try:
-            # Get date parameter or use today
             target_date = parameters.get("date", date.today().isoformat())
             
-            sleep_data = await self.fitbit_api.get_sleep_data(target_date)
+            sleep_data = self.fitbit_api.get_sleep_data(target_date)
             
             if not sleep_data:
                 return f"No sleep data available for {target_date}"
 
-            # Format the sleep data into a readable summary
             summary = [
                 f"Sleep Summary for {target_date}:",
                 f"Total Sleep Time: {sleep_data.get('totalMinutesAsleep', 0)} minutes",
-                f"Total Time in Bed: {sleep_data.get('totalTimeInBed', 0)} minutes",
-                f"Sleep Efficiency: {sleep_data.get('efficiency', 0)}%"
+                f"Total Time in Bed: {sleep_data.get('totalTimeInBed', 0)} minutes"
             ]
 
-            # Add sleep stages if available
             stages = sleep_data.get('stages', {})
             if stages:
                 summary.append("\nSleep Stages:")

@@ -1,10 +1,9 @@
 from collections import deque
 import json
-import asyncio
 from openai import OpenAI
 from agents.tools.weather.weather_tool import WeatherTool
+from agents.tools.fitbit.sleep_tool import SleepTool
 from voice_generator import VoiceGenerator
-from agents.fitbit.fitbit_agent import FitbitAPI
 from agents.spotify_player import SpotifyPlayer
 from google_api.gmail_reader.gmail_reader import GmailReader
 from agents.notion_agent import NotionAgent
@@ -18,7 +17,6 @@ class OpenAIChatAssistant:
         self.model = model
         self.tts = VoiceGenerator(voice=voice)
         self.history = deque(maxlen=history_limit)
-        self.fitbit_api = FitbitAPI()
         self.spotify_player = SpotifyPlayer()
         self.gmail_reader = GmailReader()
         self.notion_agent = NotionAgent()
@@ -27,19 +25,6 @@ class OpenAIChatAssistant:
 
         # Definition der verfügbaren Funktionen für das Modell
         self.tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_sleep_data",
-                    "description": "Get Fitbit sleep data summary for a specific date.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                        "additionalProperties": False
-                    },
-                }
-            },
             {
                 "type": "function",
                 "function": {
@@ -125,29 +110,14 @@ class OpenAIChatAssistant:
     def _initialize_tools(self):
         """Initialize and register all available tools"""
         self.tool_registry.register_tool(WeatherTool())
+        self.tool_registry.register_tool(SleepTool())
 
     def _execute_function(self, function_call):
         """Führt die aufgerufene Funktion aus und gibt das Ergebnis zurück"""
         function_name = function_call.function.name
         arguments = json.loads(function_call.function.arguments)
 
-        if function_name == "get_sleep_data":
-            sleep_data = self.fitbit_api.get_sleep_data()
-            if sleep_data:
-                summary = [
-                    f"Total Sleep Time: {sleep_data.get('totalMinutesAsleep', 0)} minutes",
-                    f"Total Time in Bed: {sleep_data.get('totalTimeInBed', 0)} minutes",
-                    f"Sleep Efficiency: {sleep_data.get('efficiency', 0)}%"
-                ]
-                stages = sleep_data.get('stages', {})
-                if stages:
-                    summary.append("\nSleep Stages:")
-                    for stage, minutes in stages.items():
-                        summary.append(f"- {stage}: {minutes} minutes")
-                return "\n".join(summary)
-            return "No sleep data available for the requested date."
-
-        elif function_name == "play_song":
+        if function_name == "play_song":
             query = arguments.get("query")
             if query:
                 self.spotify_player.play_track(query)
@@ -192,7 +162,7 @@ class OpenAIChatAssistant:
             # Combine both legacy tools and new registry tools
             all_tools = [
                 *self.tools,  # Legacy tools
-                *self.tool_registry.get_all_definitions()  # New registry tools
+                *self.tool_registry.get_all_definitions()
             ]
 
             response = self.openai.chat.completions.create(
@@ -207,6 +177,7 @@ class OpenAIChatAssistant:
                 for tool_call in assistant_message.tool_calls:
                     # Try new registry first
                     tool = self.tool_registry.get_tool(tool_call.function.name)
+                    print(tool)
                     if tool:
                         # Execute new-style tool
                         function_response = await tool.execute(

@@ -1,13 +1,13 @@
-import requests
 import datetime
 import base64
 import os
 import json
 import logging
+import requests
 from dotenv import load_dotenv
 from typing import Tuple, Optional, Dict, Any
 
-class FitbitAPI:
+class FitbitClient:
     """Class to interact with the Fitbit API."""
     
     TOKEN_URL = "https://api.fitbit.com/oauth2/token"
@@ -149,6 +149,6 @@ class FitbitAPI:
     
     
 if __name__ == "__main__":
-    fitbit = FitbitAPI()
+    fitbit = FitbitClient()
     sleep_data = fitbit.get_sleep_data()
     print(sleep_data)
