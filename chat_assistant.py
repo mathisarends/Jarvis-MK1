@@ -59,47 +59,41 @@ class OpenAIChatAssistant:
 
             assistant_message = response.choices[0].message
 
-            if assistant_message.tool_calls:
-                for tool_call in assistant_message.tool_calls:
-                    tool = self.tool_registry.get_tool(tool_call.function.name)
-                    if tool:
-                        tool_response = await tool.execute(
-                            json.loads(tool_call.function.arguments)
-                        )
-                        
-                        if tool_response.behavior_instructions:
-                            messages[0] = {
-                                "role": "system",
-                                "content": f"{self.system_prompt}\n\n{tool_response.behavior_instructions}"
-                            }
-
-                        messages.append(assistant_message)
-                        messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": tool_response.content
-                        })
-
-                second_response = self.openai.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    tools=self.tool_registry.get_all_definitions()
-                )
-                
-                final_response = second_response.choices[0].message.content
-            else:
+            if not assistant_message.tool_calls:
                 final_response = assistant_message.content
+                self.history.append((user_input, final_response))
+                return final_response
 
+            for tool_call in assistant_message.tool_calls:
+                tool = self.tool_registry.get_tool(tool_call.function.name)
+                if not tool:
+                    continue
+
+                tool_response = await tool.execute(json.loads(tool_call.function.arguments))
+
+                if tool_response.behavior_instructions:
+                    messages[0]["content"] = f"{self.system_prompt}\n\n{tool_response.behavior_instructions}"
+
+                messages.append(assistant_message)
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": tool_response.content
+                })
+
+            # Generate second response with updated messages
+            second_response = self.openai.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                tools=self.tool_registry.get_all_definitions()
+            )
+
+            final_response = second_response.choices[0].message.content
             self.history.append((user_input, final_response))
             return final_response
 
         except Exception as e:
-            print(f"❌ OpenAI request failed: {e}")
-            return "An error occurred during processing."
-
-        except Exception as e:
-            print(f"❌ OpenAI request failed: {e}")
-            return "An error occurred during processing."
+            return f"Error processing response: {str(e)}"
 
     async def speak_response(self, user_input):
         """Holt die GPT-Antwort und spricht sie aus"""

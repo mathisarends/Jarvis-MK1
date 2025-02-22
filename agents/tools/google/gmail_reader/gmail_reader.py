@@ -4,6 +4,7 @@ import base64
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from bs4 import BeautifulSoup  
 
 class GmailReader:
     """Klasse zum Abrufen ungelesener E-Mails aus der Gmail API"""
@@ -38,32 +39,45 @@ class GmailReader:
         return build("gmail", "v1", credentials=creds)
 
     def clean_email_content(self, content):
-        """Entfernt überflüssige Leerzeilen aus dem E-Mail-Text"""
         lines = content.split("\n")
         cleaned_lines = [line.strip() for line in lines if line.strip()]
         return "\n".join(cleaned_lines)
 
     def get_email_content(self, msg):
-        """Extrahiert den Text-Inhalt einer E-Mail und bereinigt ihn"""
         if "payload" not in msg:
             return "⚠️ Kein Inhalt gefunden."
 
         payload = msg["payload"]
         body = None
+        mime_type = None
 
         if "parts" in payload:
             for part in payload["parts"]:
                 if part["mimeType"] == "text/plain":
                     body = part["body"].get("data")
+                    mime_type = "text"
                     break
+                elif part["mimeType"] == "text/html":
+                    body = part["body"].get("data")
+                    mime_type = "html"
+
         else:
             body = payload["body"].get("data")
+            mime_type = payload["mimeType"]
+            print("mime_type", mime_type)
 
         if body:
             decoded_content = base64.urlsafe_b64decode(body).decode("utf-8", errors="ignore")
-            return self.clean_email_content(decoded_content)
-        else:
-            return "⚠️ Kein lesbarer Text gefunden."
+
+            if mime_type == "text/html" or mime_type == "html":
+                soup = BeautifulSoup(decoded_content, "html.parser")
+                text_content = soup.get_text(separator="\n")  # HTML zu reinem Text umwandeln
+                return self.clean_email_content(text_content)
+            else:
+                return self.clean_email_content(decoded_content)
+
+        return "⚠️ Kein lesbarer Text gefunden."
+
 
     def list_primary_unread_messages(self, max_results=5):
         """Listet ungelesene E-Mails aus der Kategorie 'Allgemein' auf und gibt sie als String zurück"""
