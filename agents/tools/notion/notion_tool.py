@@ -5,7 +5,6 @@ from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.notion.notion_client import NotionClient
 
-
 class NotionTool(Tool):
     def __init__(self):
         self.notion_agent = NotionClient()
@@ -14,23 +13,27 @@ class NotionTool(Tool):
     def get_definition(self) -> ToolDefinition:
         return ToolDefinition(
             name="notion",
-            description="Manage tasks in Notion database including retrieving and adding tasks.",
+            description="Manage tasks in Notion database and clipboard including retrieving tasks, adding tasks, and saving content to clipboard.",
             parameters={
                 "action": ToolParameter(
                     type="string",
-                    description="The action to perform: 'get_tasks' or 'add_task'",
+                    description="The action to perform: 'get_tasks', 'add_task', or 'save_to_clipboard'",
                     required=True
                 ),
                 "task_name": ToolParameter(
                     type="string",
                     description="The name of the task to add (only required for add_task action)",
                     required=False
+                ),
+                "content": ToolParameter(
+                    type="string",
+                    description="The content to save to clipboard (only required for save_to_clipboard action)",
+                    required=False
                 )
             }
         )
 
     async def execute(self, parameters: Dict[str, Any]) -> ToolResponse:
-        
         task_behavior = """
         When presenting task information:
         1. Analyze and prioritize tasks based on priority
@@ -55,14 +58,24 @@ class NotionTool(Tool):
                     return "Error: task_name is required for add_task action"
                     
                 self.notion_agent.add_database_entry(task_name)
-                
                 return ToolResponse(
                     f"Successfully added task: '{task_name}'",
                     task_behavior
                 )
                 
+            elif action == "save_to_clipboard":
+                content = parameters.get("content")
+                if not content:
+                    return "Error: content is required for save_to_clipboard action"
+                    
+                result = self.notion_agent.append_to_clipboard_page(content)
+                return ToolResponse(
+                    f"Successfully saved to Notion clipboard: {result}",
+                    "Content has been formatted with Markdown and added to your Notion clipboard page."
+                )
+                
             else:
-                return f"Error: Unknown action '{action}'. Supported actions are 'get_tasks' and 'add_task'."
+                return f"Error: Unknown action '{action}'. Supported actions are 'get_tasks', 'add_task', and 'save_to_clipboard'."
                 
         except Exception as e:
             return f"Error executing Notion tool: {str(e)}"

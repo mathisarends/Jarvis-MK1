@@ -96,14 +96,21 @@ class NotionClient:
 
     def append_to_clipboard_page(self, text: str) -> str:
         """
-        Fügt formatierten Text zur Clipboard-Seite hinzu.
+        Fügt formatierten Text zur Clipboard-Seite hinzu, mit einem Trenner davor.
         """
         clipboard_page_id = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
         url = f"https://api.notion.com/v1/blocks/{clipboard_page_id}/children"
         
-        # Nutze den statischen Parser
-        blocks = NotionMarkdownParser.parse_markdown(text)
-        data = {"children": blocks}
+        divider_block = {
+            "type": "divider",
+            "divider": {}
+        }
+        
+        content_blocks = NotionMarkdownParser.parse_markdown(text)
+        
+        data = {
+            "children": [divider_block] + content_blocks
+        }
         
         response = requests.patch(url, headers=self.HEADERS, json=data)
         
@@ -113,7 +120,7 @@ class NotionClient:
         else:
             self.logger.error(f"Fehler beim Hinzufügen des Textes: {response.text}")
             return f"Fehler beim Hinzufügen des Textes: {response.text}"
-                    
+        
     def get_accessible_pages(self):
         """Ruft alle Notion-Seiten ab, auf die der aktuelle API-Token Zugriff hat."""
         url = "https://api.notion.com/v1/search"
