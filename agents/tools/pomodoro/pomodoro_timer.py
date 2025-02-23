@@ -16,14 +16,14 @@ class PomodoroTimer:
         self.voice_generator = VoiceGenerator()
         self.start_time = None
         self.responses = [
-            "Ihr Pomodoro-Timer ist abgelaufen. Wollen Sie eine weitere Runde starten?",
-            "Die Zeit ist um. Es wäre ratsam, eine kurze Pause einzulegen.",
-            "Mission abgeschlossen. Möchten Sie direkt weitermachen?",
-            "Ihr Fokus-Timer ist beendet. Nutzen Sie die Zeit zum Durchatmen.",
-            "Exzellente Arbeit! Jetzt wäre der perfekte Moment für eine Pause.",
-            "Pomodoro beendet. Soll ich Ihnen helfen, den nächsten Timer zu setzen?",
-            "Gut gemacht! Zeit für eine wohlverdiente Unterbrechung.",
-            "Die Konzentrationsphase ist vorbei. Was ist der nächste Schritt?"
+            "Ihr Pomodoro-Timer ist beendet. Möchten Sie eine neue Arbeitsphase starten?",
+            "Die Konzentrationszeit ist vorbei. Jetzt ist eine kurze Pause angebracht!",
+            "Ihr Fokustimer ist abgelaufen. Wollen Sie eine weitere Session beginnen?",
+            "Pomodoro beendet! Zeit, sich kurz zu entspannen, bevor es weitergeht.",
+            "Gut gemacht! Ihr Timer ist abgelaufen. Bereit für die nächste Runde?",
+            "Exzellente Arbeit! Der Timer ist abgelaufen. Nutzen Sie die Pause sinnvoll.",
+            "Die aktuelle Arbeitsphase ist abgeschlossen. Wie möchten Sie fortfahren?",
+            "Ihr Pomodoro-Timer ist um. Soll ich eine weitere Sitzung für Sie starten?"
         ]
 
     def start(self):

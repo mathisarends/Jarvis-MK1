@@ -4,6 +4,10 @@ import os
 import json
 import logging
 import requests
+import asyncio
+import datetime
+import aiohttp
+import asyncio
 from dotenv import load_dotenv
 from typing import Tuple, Optional, Dict, Any
 
@@ -87,68 +91,84 @@ class FitbitClient:
         self.logger.error(f"Failed to renew access token: {response.json()}")
         return False
 
-    def make_request(self, endpoint: str) -> Optional[Dict[str, Any]]:
-        url = f"{self.BASE_URL}{endpoint}"
+    async def fetch_sleep_data(self, date: str) -> Optional[Dict[str, Any]]:
+        """Fetch raw sleep data for a given date."""
+        endpoint = f"{self.BASE_URL}/sleep/date/{date}.json"
         headers = {"Authorization": f"Bearer {self.access_token}"}
 
-        response = requests.get(url, headers=headers)
-        
-        if response.status_code == 401:
-            self.logger.info("Token expired, attempting renewal")
-            if self._update_access_token():
-                headers["Authorization"] = f"Bearer {self.access_token}"
-                response = requests.get(url, headers=headers)
-            else:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint, headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                print(f"API request for {date} failed: {await response.text()}")
                 return None
 
-        if response.status_code == 200:
-            return response.json()
-        
-        self.logger.error(f"API request failed: {response.json()}")
-        return None
+    def get_sleep_stages(self, sleep_entry: Dict[str, Any]) -> Dict[str, int]:
+        """Extract sleep stages (Deep, Light, REM, Wake) from a sleep entry."""
+        stages = sleep_entry.get("levels", {}).get("summary", {})
+        return {
+            "deep": stages.get("deep", {}).get("minutes", 0),
+            "light": stages.get("light", {}).get("minutes", 0),
+            "rem": stages.get("rem", {}).get("minutes", 0),
+            "wake": stages.get("wake", {}).get("minutes", 0)
+        }
 
-    def get_sleep_data(self, date: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        """
-        Get sleep data for a specific date.
+    async def get_sleep_summary(self, date: str) -> Optional[Dict[str, Any]]:
+        """Fetch structured sleep summary for a specific date."""
+        sleep_data = await self.fetch_sleep_data(date)
+        if not sleep_data or "sleep" not in sleep_data or not sleep_data["sleep"]:
+            return None
         
-        Args:
-            date (str, optional): Date in format YYYY-MM-DD. Defaults to today.
-        """
-        date = date or datetime.date.today().strftime("%Y-%m-%d")
-        endpoint = f"/sleep/date/{date}.json"
-        
-        sleep_data = self.make_request(endpoint)
-        return sleep_data.get("summary") if sleep_data else None
-    
-    def request_new_access_token(self, auth_code: str) -> bool:
-        """
-        Request a new access token using an authorization code.
-        https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=http://localhost&scope=sleep&expires_in=604800
-        """
-        response = requests.post(
-            self.TOKEN_URL,
-            headers=self._get_auth_header(),
-            data={
-                "client_id": self.client_id,
-                "grant_type": "authorization_code",
-                "redirect_uri": "https://example.com/redirect",
-                "code": auth_code
-            }
-        )
+        main_sleep = sleep_data["sleep"][0]  # Use the primary sleep session
+        sleep_stages = self.get_sleep_stages(main_sleep)
 
-        if response.status_code == 200:
-            tokens = response.json()
-            self.access_token = tokens["access_token"]
-            self.refresh_token = tokens["refresh_token"]
-            self._save_tokens()
-            self.logger.info("New access token successfully obtained")
-            return True
-            
-        self.logger.error(f"Failed to obtain new access token: {response.json()}")
-        return False
-    
-    
-if __name__ == "__main__":
+        return {
+            "date": date,
+            "start_time": main_sleep.get("startTime"),
+            "end_time": main_sleep.get("endTime"),
+            "sleep_duration": main_sleep.get("minutesAsleep", 0),
+            "sleep_stages": sleep_stages
+        }
+
+    async def get_last_5_days_sleep_summary(self) -> Dict[str, Any]:
+        """Fetch sleep summaries for the past 5 days plus today and aggregate the data."""
+        today = datetime.date.today()
+        dates = [(today - datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6)]
+
+        sleep_summaries = await asyncio.gather(*[self.get_sleep_summary(date) for date in dates])
+        sleep_summaries = [s for s in sleep_summaries if s is not None]  # Remove None values
+
+        total_sleep_time = sum(s["sleep_duration"] for s in sleep_summaries)
+        average_sleep_time = total_sleep_time // len(sleep_summaries) if sleep_summaries else 0
+
+        # Durchschnittswerte für Schlafphasen berechnen
+        avg_sleep_stages = {
+            "deep": sum(s["sleep_stages"]["deep"] for s in sleep_summaries) // len(sleep_summaries) if sleep_summaries else 0,
+            "light": sum(s["sleep_stages"]["light"] for s in sleep_summaries) // len(sleep_summaries) if sleep_summaries else 0,
+            "rem": sum(s["sleep_stages"]["rem"] for s in sleep_summaries) // len(sleep_summaries) if sleep_summaries else 0,
+            "wake": sum(s["sleep_stages"]["wake"] for s in sleep_summaries) // len(sleep_summaries) if sleep_summaries else 0,
+        }
+
+        return {
+            "total_sleep_time": total_sleep_time,
+            "average_sleep_time": average_sleep_time,
+            "average_sleep_stages": avg_sleep_stages,
+            "sleep_sessions": sleep_summaries
+        }
+
+
+async def main():
     fitbit = FitbitClient()
-    sleep_data = fitbit.get_sleep_data()
-    print(sleep_data)
+
+    today_summary = await fitbit.get_sleep_summary(datetime.date.today().strftime("%Y-%m-%d"))
+    last_5_days_summary = await fitbit.get_last_5_days_sleep_summary()
+
+    result = {
+        "today": today_summary,
+        "last_5_days": last_5_days_summary
+    }
+
+    print(json.dumps(result, indent=2))
+
+if __name__ == "__main__":
+    asyncio.run(main())

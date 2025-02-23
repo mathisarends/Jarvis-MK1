@@ -5,4 +5,5 @@ class ToolParameter:
     type: str
     description: str
     required: bool = False
+    default: bool = False
 
