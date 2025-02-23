@@ -155,6 +155,47 @@ class FitbitClient:
             "average_sleep_stages": avg_sleep_stages,
             "sleep_sessions": sleep_summaries
         }
+    
+    # TODO: Die Klassen hier trennen
+    async def fetch_activity_data(self, date: str) -> Optional[Dict[str, Any]]:
+        """Fetch daily activity summary for a given date."""
+        endpoint = f"{self.BASE_URL}/activities/date/{date}.json"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint, headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                self.logger.error(f"API request for activity on {date} failed: {await response.text()}")
+                return None
+            
+    def get_activity_summary(self, activity_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract steps, distance, calories burned, and active minutes from activity data."""
+        summary = activity_data.get("summary", {})
+        
+        return {
+            "steps": summary.get("steps", 0),
+            "distance_km": next((x["distance"] for x in summary.get("distances", []) if x["activity"] == "total"), 0),
+            "calories_burned": summary.get("caloriesOut", 0),
+            "active_minutes": summary.get("fairlyActiveMinutes", 0) + summary.get("veryActiveMinutes", 0)
+        }
+        
+    async def get_last_5_days_activity_summary(self) -> Dict[str, Any]:
+        """Fetch activity summaries for the past 5 days plus today and aggregate the data."""
+        today = datetime.date.today()
+        dates = [(today - datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6)]
+
+        activity_summaries = await asyncio.gather(*[self.fetch_activity_data(date) for date in dates])
+        activity_summaries = [self.get_activity_summary(a) for a in activity_summaries if a is not None]
+
+        total_steps = sum(s["steps"] for s in activity_summaries)
+        average_steps = total_steps // len(activity_summaries) if activity_summaries else 0
+
+        return {
+            "total_steps": total_steps,
+            "average_steps": average_steps,
+            "activity_sessions": activity_summaries
+        }
 
 
 async def main():
@@ -166,6 +207,18 @@ async def main():
     result = {
         "today": today_summary,
         "last_5_days": last_5_days_summary
+    }
+
+    print(json.dumps(result, indent=2))
+    
+    print("="*80)
+    
+    today_activity = await fitbit.fetch_activity_data(datetime.date.today().strftime("%Y-%m-%d"))
+    last_5_days_activity = await fitbit.get_last_5_days_activity_summary()
+
+    result = {
+        "today_activity": fitbit.get_activity_summary(today_activity),
+        "last_5_days_activity": last_5_days_activity
     }
 
     print(json.dumps(result, indent=2))

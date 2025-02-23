@@ -150,30 +150,28 @@ if __name__ == "__main__":
     
     markdown_text = """# Meine tägliche To-Do Liste
 
-Heute ist ein produktiver Tag! Ich werde mich auf folgende Aufgaben konzentrieren:
+    Heute ist ein produktiver Tag! Ich werde mich auf folgende Aufgaben konzentrieren:
 
-## 🛠️ Arbeit
-- **Projekt X abschließen**
-- *Feedback zu Feature Y einholen*
-- `Code-Review` für PR #42 durchführen
-- ~~Altes Dashboard löschen~~
+    ## 🛠️ Arbeit
+    - **Projekt X abschließen**
+    - *Feedback zu Feature Y einholen*
+    - `Code-Review` für PR #42 durchführen
+    - ~~Altes Dashboard löschen~~
 
-## 📚 Lernen
-- **Neues Kapitel in 'Clean Code' lesen**
-- *Python AsyncIO ausprobieren*
-- `Markdown`-Syntax weiter vertiefen
-- [Dokumentation zur Notion API](https://developers.notion.com) durchgehen
+    ## 📚 Lernen
+    - **Neues Kapitel in 'Clean Code' lesen**
+    - *Python AsyncIO ausprobieren*
+    - `Markdown`-Syntax weiter vertiefen
+    - [Dokumentation zur Notion API](https://developers.notion.com) durchgehen
 
-## 💪 Gesundheit
-- __30 Minuten Krafttraining__
-- ~~Fastfood vermeiden~~
-- *Mehr Wasser trinken*
+    ## 💪 Gesundheit
+    - __30 Minuten Krafttraining__
+    - ~~Fastfood vermeiden~~
+    - *Mehr Wasser trinken*
 
-Am Ende des Tages reflektiere ich, was gut lief und wo ich mich verbessern kann. 🚀
+    Am Ende des Tages reflektiere ich, was gut lief und wo ich mich verbessern kann. 🚀
 """
     
     
     result = notion_client.append_to_clipboard_page(markdown_text)
     print(result)
-    # result = notion_client.get_database_entries_and_delete_completed()
-    # print(result)
