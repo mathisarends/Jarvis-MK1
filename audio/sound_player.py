@@ -1,23 +1,26 @@
 import threading
 import pygame
+import os
 from pydub import AudioSegment
 from io import BytesIO
+
+# Umstellen auf 
 
 class SoundPlayer:
     """Verwaltet das Abspielen des Wake-Word-Sounds in einem separaten Thread."""
     
-    def __init__(self, sound_file="./audio/listening.mp3"):
-        """Initialisiert die Sound-Wiedergabe."""
-        self.sound = AudioSegment.from_file(sound_file)
+    def __init__(self, file_path):
+        self.base_path = os.path.dirname(__file__)
         self._setup_pygame()
         self._audio_lock = threading.Lock()
+        
+        full_path = os.path.join(self.base_path, file_path)
+        self.sound = AudioSegment.from_file(full_path)
 
     def _setup_pygame(self):
-        """Initialisiert pygame für die Audio-Wiedergabe."""
         pygame.mixer.init()
 
     def _play_audio_thread(self):
-        """Spielt das Audio im Hintergrund ab, synchronisiert mit Lock."""
         with self._audio_lock:
             try:
                 audio_io = BytesIO()
@@ -36,8 +39,7 @@ class SoundPlayer:
                 pygame.mixer.music.stop()
                 audio_io.close()
 
-    def play_listening_sound(self):
-        """Startet die Audio-Wiedergabe in einem separaten Thread."""
+    def play_audio(self):
         threading.Thread(
             target=self._play_audio_thread,
             daemon=True

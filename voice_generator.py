@@ -7,7 +7,7 @@ import pygame
 import threading
 
 class VoiceGenerator:
-    def __init__(self, voice="ash"):
+    def __init__(self, voice="fable"):
         """Initializes the TTS generator with OpenAI API and adjustable speed"""
         self.openai = OpenAI()
         self.voice = voice
@@ -26,22 +26,26 @@ class VoiceGenerator:
             
     def _setup_pygame(self):
         """Initializes pygame mixer for audio playback"""
-        pygame.mixer.init()
+        try:
+            pygame.mixer.quit()  
+            pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)
+        except Exception as e:
+            print(f"❌ Pygame initialization error: {e}")
         
     def _play_audio_thread(self, audio_data):
         """Handles audio playback in a separate thread"""
         with self._audio_lock:
             try:
-                # Convert audio to WAV format in memory
+                if not pygame.mixer.get_init():
+                    self._setup_pygame()
+                
                 audio_io = BytesIO()
                 audio_data.export(audio_io, format="wav")
                 audio_io.seek(0)
                 
-                # Load and play audio using pygame
                 pygame.mixer.music.load(audio_io)
                 pygame.mixer.music.play()
                 
-                # Wait for playback to complete
                 while pygame.mixer.music.get_busy():
                     pygame.time.wait(100)
                     

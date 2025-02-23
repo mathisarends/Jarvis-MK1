@@ -49,7 +49,7 @@ class YoutubeTool(Tool):
             if not liked_videos:
                 return ToolResponse("No liked videos found.")
             video_list = "\n".join([
-                f"{i+1}. {video['title']} (by {video['channel']}): {video['url']}"
+                f"{i+1}. {video['title']} (by {video['channel']}"
                 for i, video in enumerate(liked_videos)
             ])
             return ToolResponse(f"Your recently liked videos:\n\n{video_list}")

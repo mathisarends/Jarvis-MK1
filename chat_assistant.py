@@ -3,6 +3,7 @@ import json
 from openai import OpenAI
 from agents.tools.google.youtube_tool import YoutubeTool
 from agents.tools.notion.notion_tool import NotionTool
+from agents.tools.pomodoro.pomodor_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
 from agents.tools.fitbit.sleep_tool import SleepTool
@@ -43,6 +44,7 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(SpotifyTool())
         self.tool_registry.register_tool(NotionTool())
         self.tool_registry.register_tool(YoutubeTool())
+        self.tool_registry.register_tool(PomodoroTool())
 
     async def get_response(self, user_input: str) -> str:
         try:
@@ -83,7 +85,6 @@ class OpenAIChatAssistant:
                     "content": tool_response.content
                 })
 
-            # Generate second response with updated messages
             second_response = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,

@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import pvporcupine
 import pyaudio
 import numpy as np
-from sound_player import SoundPlayer
+from audio.sound_player import SoundPlayer
 import threading
 import time
 import logging
@@ -39,7 +39,7 @@ class WakeWordListener:
         self._detection_event = threading.Event()
         
         # Separate Instanz für Sound-Player
-        self.sound_player = SoundPlayer()
+        self.sound_player = SoundPlayer("./listening.mp3")
 
     def _audio_callback(self, in_data, frame_count, time_info, status):
         """Callback für Audio-Processing"""
@@ -50,7 +50,7 @@ class WakeWordListener:
             if keyword_index >= 0:
                 self.logger.info("🚀 Wake-Word erkannt!")
                 self._detection_event.set()
-                self.sound_player.play_listening_sound()
+                self.sound_player.play_audio()
         
         return (in_data, pyaudio.paContinue)
 
