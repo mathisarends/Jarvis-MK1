@@ -1,8 +1,11 @@
 import os
 import requests
 import logging
+import sys
 from dotenv import load_dotenv
-import re
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+from agents.tools.notion.notion_markdown_parser import NotionMarkdownParser
 
 load_dotenv()
 
@@ -91,111 +94,26 @@ class NotionClient:
         else:
             self.logger.error("Error adding entry: %s", response.text)
 
-    def append_to_clipboard_page(self, text):
+    def append_to_clipboard_page(self, text: str) -> str:
+        """
+        Fügt formatierten Text zur Clipboard-Seite hinzu.
+        """
         clipboard_page_id = "1a3389d5-7bd3-80d7-a507-e67d1b25822c"
-        
         url = f"https://api.notion.com/v1/blocks/{clipboard_page_id}/children"
         
-        rich_text_content = self.parse_markdown(text)
-
-        data = {
-            "children": [
-                {
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "rich_text": rich_text_content
-                    }
-                }
-            ]
-        }
-
+        # Nutze den statischen Parser
+        blocks = NotionMarkdownParser.parse_markdown(text)
+        data = {"children": blocks}
+        
         response = requests.patch(url, headers=self.HEADERS, json=data)
-
+        
         if response.status_code == 200:
             self.logger.info("Text erfolgreich zur Clipboard Seite hinzugefügt.")
             return "Text erfolgreich zur Clipboard Seite hinzugefügt."
         else:
             self.logger.error(f"Fehler beim Hinzufügen des Textes: {response.text}")
             return f"Fehler beim Hinzufügen des Textes: {response.text}"
-        
-    def parse_markdown(self, text: str):
-        """Konvertiert Markdown in korrektes Notion `rich_text`-Format."""
-        elements = []
-
-        patterns = [
-            (r"\*\*(.*?)\*\*", "bold"),       # **fett**
-            (r"\*(.*?)\*", "italic"),         # *kursiv*
-            (r"`(.*?)`", "code"),             # `code`
-            (r"~~(.*?)~~", "strikethrough"),  # ~~durchgestrichen~~
-            (r"__(.*?)__", "underline"),      # __unterstrichen__
-            (r"\[(.*?)\]\((.*?)\)", "link")   # [text](URL)
-        ]
-
-        last_index = 0
-        for pattern, style in patterns:
-            for match in re.finditer(pattern, text):
-                start, end = match.span()
-                if start > last_index:
-                    elements.append({
-                        "type": "text",
-                        "text": {"content": text[last_index:start]},
-                        "annotations": {
-                            "bold": False,
-                            "italic": False,
-                            "strikethrough": False,
-                            "underline": False,
-                            "code": False,
-                            "color": "default"
-                        }
-                    })
-
-                if style == "link":
-                    link_text, link_url = match.groups()
-                    elements.append({
-                        "type": "text",
-                        "text": {"content": link_text, "link": {"url": link_url}},
-                        "annotations": {
-                            "bold": False,
-                            "italic": False,
-                            "strikethrough": False,
-                            "underline": False,
-                            "code": False,
-                            "color": "default"
-                        }
-                    })
-                else:
-                    elements.append({
-                        "type": "text",
-                        "text": {"content": match.group(1)},
-                        "annotations": {
-                            "bold": style == "bold",
-                            "italic": style == "italic",
-                            "strikethrough": style == "strikethrough",
-                            "underline": style == "underline",
-                            "code": style == "code",
-                            "color": "default"
-                        }
-                    })
-
-                last_index = end
-
-        if last_index < len(text):
-            elements.append({
-                "type": "text",
-                "text": {"content": text[last_index:]},
-                "annotations": {
-                    "bold": False,
-                    "italic": False,
-                    "strikethrough": False,
-                    "underline": False,
-                    "code": False,
-                    "color": "default"
-                }
-            })
-
-        return elements
-            
+                    
     def get_accessible_pages(self):
         """Ruft alle Notion-Seiten ab, auf die der aktuelle API-Token Zugriff hat."""
         url = "https://api.notion.com/v1/search"
