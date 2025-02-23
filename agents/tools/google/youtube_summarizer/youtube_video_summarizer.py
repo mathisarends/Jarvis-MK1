@@ -5,7 +5,7 @@ import openai
 
 load_dotenv()
 
-class YoutubeSummaryAgent:
+class YoutubeVideoSummarizer:
     def __init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         openai.api_key = self.openai_api_key
@@ -87,7 +87,7 @@ class YoutubeSummaryAgent:
 
 # Nutzung der Klasse
 if __name__ == "__main__":
-    agent = YoutubeSummaryAgent()
+    agent = YoutubeVideoSummarizer()
 
     video_url = "https://www.youtube.com/watch?v=Qc6pdR8BhFA"
 

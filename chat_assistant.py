@@ -1,6 +1,7 @@
 from collections import deque
 import json
 from openai import OpenAI
+from agents.tools.google.youtube_tool import YoutubeTool
 from agents.tools.notion.notion_tool import NotionTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
@@ -41,6 +42,7 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(GmailReaderTool())
         self.tool_registry.register_tool(SpotifyTool())
         self.tool_registry.register_tool(NotionTool())
+        self.tool_registry.register_tool(YoutubeTool())
 
     async def get_response(self, user_input: str) -> str:
         try:
