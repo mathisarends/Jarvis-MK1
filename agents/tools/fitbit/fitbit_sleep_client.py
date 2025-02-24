@@ -2,7 +2,9 @@ from typing import Any, Dict, Optional
 from agents.tools.fitbit.fitbit_data_client import FitbitDataClient
 
 class FitbitSleepClient(FitbitDataClient):
-    """Client for handling Fitbit sleep data."""
+
+    def _convert_minutes_to_hours(self, minutes: int) -> float:
+        return round(minutes / 60, 1)
 
     async def fetch_data(self, date: str) -> Optional[Dict[str, Any]]:
         url = f"{self.BASE_URL}/sleep/date/{date}.json"
@@ -31,7 +33,25 @@ class FitbitSleepClient(FitbitDataClient):
             "sleep_duration": main_sleep.get("minutesAsleep", 0),
             "sleep_stages": self._get_sleep_stages(main_sleep)
         }
-        
+
+    def format_daily_summary(self, sleep_summary: Optional[Dict[str, Any]]) -> str:
+        if not sleep_summary:
+            return "Keine Schlafdaten verfügbar."
+
+        sleep_duration = self._convert_minutes_to_hours(sleep_summary["sleep_duration"])
+        sleep_stages = {
+            stage: self._convert_minutes_to_hours(time) 
+            for stage, time in sleep_summary["sleep_stages"].items()
+        }
+
+        return (
+            f"Du hast {sleep_duration} Stunden geschlafen. "
+            f"Dein Schlaf bestand aus {sleep_stages['deep']} Stunden Tiefschlaf, "
+            f"{sleep_stages['light']} Stunden Leichtschlaf, "
+            f"{sleep_stages['rem']} Stunden REM-Schlaf und "
+            f"{sleep_stages['wake']} Stunden Wachphasen."
+        )
+
     async def get_multi_day_summary(self, days: int = 6) -> Dict[str, Any]:
         sleep_summaries = await self._get_multi_day_data(days, self.get_daily_summary)
         
@@ -53,4 +73,20 @@ class FitbitSleepClient(FitbitDataClient):
                 for stage in ["deep", "light", "rem", "wake"]
             },
             "sleep_sessions": sleep_summaries
-        }        
+        }
+
+    def format_multi_day_summary(self, summary: Dict[str, Any]) -> str:
+        avg_sleep_time = self._convert_minutes_to_hours(summary["average_sleep_time"])
+        avg_stages = {
+            stage: self._convert_minutes_to_hours(time) 
+            for stage, time in summary["average_sleep_stages"].items()
+        }
+
+        return (
+            f"Im Vergleich zu den letzten fünf Tagen hast du im Durchschnitt "
+            f"{avg_sleep_time} Stunden geschlafen. Üblicherweise hast du "
+            f"{avg_stages['deep']} Stunden Tiefschlaf, "
+            f"{avg_stages['light']} Stunden Leichtschlaf, "
+            f"{avg_stages['rem']} Stunden REM-Schlaf und "
+            f"{avg_stages['wake']} Stunden Wachphasen."
+        )

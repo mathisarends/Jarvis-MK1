@@ -27,6 +27,18 @@ class FitbitActivityClient(FitbitDataClient):
                              summary.get("veryActiveMinutes", 0))
         }
 
+    def format_daily_summary(self, activity_summary: Optional[Dict[str, Any]]) -> str:
+        """Format daily activity summary into readable text."""
+        if not activity_summary:
+            return "Keine Aktivitätsdaten verfügbar."
+
+        return (
+            f"Du hast {activity_summary['steps']:,} Schritte gemacht, "
+            f"{activity_summary['distance_km']:.1f} km zurückgelegt und "
+            f"{activity_summary['active_minutes']} aktive Minuten gesammelt. "
+            f"Dabei hast du {activity_summary['calories_burned']:,} Kalorien verbrannt."
+        )
+
     async def get_multi_day_summary(self, days: int = 6) -> Dict[str, Any]:
         async def get_processed_daily_data(date: str) -> Optional[Dict[str, Any]]:
             data = await self.fetch_data(date)
@@ -48,3 +60,10 @@ class FitbitActivityClient(FitbitDataClient):
             "average_steps": total_steps // len(activity_summaries),
             "activity_sessions": activity_summaries
         }
+
+    def format_multi_day_summary(self, summary: Dict[str, Any]) -> str:
+        """Format multi-day activity summary into readable text."""
+        return (
+            f"Im Durchschnitt der letzten fünf Tage hast du "
+            f"{summary['average_steps']:,} Schritte pro Tag gemacht."
+        )
