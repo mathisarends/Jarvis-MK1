@@ -1,12 +1,12 @@
 from collections import deque
 import json
 from openai import OpenAI
+from agents.tools.fitbit.fitbit_tool import FitbitTool
 from agents.tools.google.youtube_tool import YoutubeTool
 from agents.tools.notion.notion_tool import NotionTool
 from agents.tools.pomodoro.pomodor_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
-from agents.tools.fitbit.sleep_tool import SleepTool
 from agents.tools.google.gmail_reader_tool import GmailReaderTool
 from voice_generator import VoiceGenerator
 
@@ -39,7 +39,7 @@ class OpenAIChatAssistant:
     def _initialize_tools(self):
         """Initialize and register all available tools"""
         self.tool_registry.register_tool(WeatherTool())
-        self.tool_registry.register_tool(SleepTool())
+        self.tool_registry.register_tool(FitbitTool())
         self.tool_registry.register_tool(GmailReaderTool())
         self.tool_registry.register_tool(SpotifyTool())
         self.tool_registry.register_tool(NotionTool())
