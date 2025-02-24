@@ -65,6 +65,29 @@ class FitbitClient:
             "Authorization": f"Basic {auth_string}",
             "Content-Type": "application/x-www-form-urlencoded"
         }
+        
+    async def _request_with_reauth(self, url: str) -> Optional[Dict[str, Any]]:
+            """Sendet eine API-Anfrage und erneuert das Token bei Fehler 401."""
+            headers = {"Authorization": f"Bearer {self.access_token}"}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    elif response.status == 401:  # Token abgelaufen
+                        self.logger.warning("Access token expired, attempting refresh...")
+                        if self._update_access_token():  # Versuche Token-Erneuerung
+                            headers["Authorization"] = f"Bearer {self.access_token}"
+                            async with session.get(url, headers=headers) as retry_response:
+                                if retry_response.status == 200:
+                                    return await retry_response.json()
+                                self.logger.error(f"Retry failed: {await retry_response.text()}")
+                        else:
+                            self.logger.error("Token refresh failed")
+                    else:
+                        self.logger.error(f"API request failed: {await response.text()}")
+            return None
+
 
     def _update_access_token(self) -> bool:
         if not self.refresh_token:
@@ -93,15 +116,8 @@ class FitbitClient:
 
     async def fetch_sleep_data(self, date: str) -> Optional[Dict[str, Any]]:
         """Fetch raw sleep data for a given date."""
-        endpoint = f"{self.BASE_URL}/sleep/date/{date}.json"
-        headers = {"Authorization": f"Bearer {self.access_token}"}
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(endpoint, headers=headers) as response:
-                if response.status == 200:
-                    return await response.json()
-                print(f"API request for {date} failed: {await response.text()}")
-                return None
+        url = f"{self.BASE_URL}/sleep/date/{date}.json"
+        return await self._request_with_reauth(url)
 
     def get_sleep_stages(self, sleep_entry: Dict[str, Any]) -> Dict[str, int]:
         """Extract sleep stages (Deep, Light, REM, Wake) from a sleep entry."""
@@ -159,15 +175,8 @@ class FitbitClient:
     # TODO: Die Klassen hier trennen
     async def fetch_activity_data(self, date: str) -> Optional[Dict[str, Any]]:
         """Fetch daily activity summary for a given date."""
-        endpoint = f"{self.BASE_URL}/activities/date/{date}.json"
-        headers = {"Authorization": f"Bearer {self.access_token}"}
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(endpoint, headers=headers) as response:
-                if response.status == 200:
-                    return await response.json()
-                self.logger.error(f"API request for activity on {date} failed: {await response.text()}")
-                return None
+        url = f"{self.BASE_URL}/activities/date/{date}.json"
+        return await self._request_with_reauth(url)
             
     def get_activity_summary(self, activity_data: Dict[str, Any]) -> Dict[str, Any]:
         """Extract steps, distance, calories burned, and active minutes from activity data."""
