@@ -27,7 +27,7 @@ class FitbitTool(Tool):
                     type="boolean",
                     description="Include activity data in the response. Defaults to True.",
                     required=False,
-                    default=True
+                    default=False
                 ),
                 "compare": ToolParameter(
                     type="boolean",
@@ -48,6 +48,7 @@ class FitbitTool(Tool):
 
         if include_sleep:
             today_sleep = await self.sleep_client.get_daily_summary(today)
+            print(today_sleep)
             response_parts.append(self.sleep_client.format_daily_summary(today_sleep))
             
             if compare and today_sleep:

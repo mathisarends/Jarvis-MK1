@@ -14,6 +14,7 @@ class VoiceGenerator:
         self._setup_ffmpeg()
         self._setup_pygame()
         self._audio_lock = threading.Lock()
+        self.audio_dir = "/tmp"
         
     def _setup_ffmpeg(self):
         """Checks and sets FFmpeg path if necessary"""
@@ -63,6 +64,11 @@ class VoiceGenerator:
                 voice=self.voice,
                 input=text
             )
+            
+            audio_path = os.path.join(self.audio_dir, "tts_response.mp3")
+            with open(audio_path, "wb") as f:
+                f.write(response.content)
+            
             
             # Load MP3 directly from API response
             audio_stream = BytesIO(response.content)
