@@ -39,7 +39,7 @@ class WakeWordListener:
         self._detection_event = threading.Event()
         
         # Separate Instanz für Sound-Player
-        self.sound_player = SoundPlayer("./listening.mp3")
+        self.sound_player = SoundPlayer("./wakesound.mp3")
 
     def _audio_callback(self, in_data, frame_count, time_info, status):
         """Callback für Audio-Processing"""

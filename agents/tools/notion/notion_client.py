@@ -25,4 +25,6 @@ if __name__ == "__main__":
 """
     
     
-    clipboard_manager.append_to_clipboard(markdown_text)
+    # clipboard_manager.append_to_clipboard(markdown_text)      
+    result = todo_manager.get_entries_and_delete_completed()    
+    print(result)

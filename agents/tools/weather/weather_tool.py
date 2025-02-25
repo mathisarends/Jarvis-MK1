@@ -5,6 +5,7 @@ from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.weather.weather_client import WeatherClient
 
+
 class WeatherTool(Tool):
     def __init__(self):
         self.weather_client = WeatherClient()
@@ -13,8 +14,14 @@ class WeatherTool(Tool):
     def get_definition(self) -> ToolDefinition:
         return ToolDefinition(
             name="get_weather",
-            description="Get current temperature and hourly forecast for the user's location."
+            description=(
+                "Retrieves the current temperature and weather conditions **without requiring user input for location**. "
+                "The tool automatically determines the user's approximate location for relevant weather data. "
+                "It also provides an hourly forecast or a full-day weather summary if requested. "
+                "Severe weather conditions are highlighted."
+            )
         )
+
 
     async def execute(self, parameters: Dict[str, Any]) -> ToolResponse:
         weather_behavior = """
