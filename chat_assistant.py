@@ -3,7 +3,9 @@ import json
 from openai import OpenAI
 from agents.tools.fitbit.fitbit_tool import FitbitTool
 from agents.tools.google.youtube_tool import YoutubeTool
-from agents.tools.notion.notion_tool import NotionTool
+from agents.tools.notion.tools.notion_clipboard_tool import NotionClipboardTool
+from agents.tools.notion.tools.notion_idea_tool import NotionIdeaTool
+from agents.tools.notion.tools.notion_todo_tool import NotionTodoTool
 from agents.tools.pomodoro.pomodor_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
@@ -42,9 +44,12 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(FitbitTool())
         self.tool_registry.register_tool(GmailReaderTool())
         self.tool_registry.register_tool(SpotifyTool())
-        self.tool_registry.register_tool(NotionTool())
         self.tool_registry.register_tool(YoutubeTool())
         self.tool_registry.register_tool(PomodoroTool())
+        self.tool_registry.register_tool(NotionClipboardTool())
+        self.tool_registry.register_tool(NotionIdeaTool())
+        self.tool_registry.register_tool(NotionTodoTool())
+        
 
     async def get_response(self, user_input: str) -> str:
         try:

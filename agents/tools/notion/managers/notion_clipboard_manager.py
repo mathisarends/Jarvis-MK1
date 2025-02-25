@@ -1,5 +1,5 @@
 from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
-from agents.tools.notion.notion_markdown_parser import NotionMarkdownParser
+from agents.tools.notion.core.notion_markdown_parser import NotionMarkdownParser
 
 
 class NotionClipboardManager(AbstractNotionClient):

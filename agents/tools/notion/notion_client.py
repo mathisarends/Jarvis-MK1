@@ -2,11 +2,10 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
-from agents.tools.notion.notion_clipboard_manager import NotionClipboardManager
-from agents.tools.notion.notion_idea_manager import NotionIdeaManager
-from agents.tools.notion.notion_todo_manager import NotionTodoManager
-from agents.tools.notion.notion_utility import NotionUtility
-
+from agents.tools.notion.managers.notion_todo_manager import NotionTodoManager
+from agents.tools.notion.managers.notion_clipboard_manager import NotionClipboardManager
+from agents.tools.notion.managers.notion_idea_manager import NotionIdeaManager
+from agents.tools.notion.managers.notion_utility import NotionUtility
 
 if __name__ == "__main__":
     utility = NotionUtility()
