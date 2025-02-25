@@ -5,7 +5,6 @@ from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.weather.weather_client import WeatherClient
 
-
 class WeatherTool(Tool):
     def __init__(self):
         self.weather_client = WeatherClient()
