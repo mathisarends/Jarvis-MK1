@@ -41,11 +41,15 @@ class DayLightAlarm:
         self.running = False
 
 
-# Beispielnutzung:
-def wake_up():
-    print("Guten Morgen! Zeit aufzustehen! ☀️")
+if __name__ == "__main__":
+    alarm = DayLightAlarm("6:59", lambda: print("Guten Morgen! Zeit aufzustehen! ☀️"))
+    alarm.start()
 
-alarm = DayLightAlarm("07:30", wake_up)
-alarm.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Alarm abgebrochen.")
+
 
 

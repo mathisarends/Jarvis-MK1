@@ -36,7 +36,7 @@ class PomodoroTimer:
         self.start_time = time.time()
         print(f"Pomodoro-Timer gestartet für {self.duration_seconds // 60} Minuten.")
         threading.Timer(self.duration_seconds, self.play_alarm).start()
-    
+               
     def stop(self):
         if self.running:
             print("Pomodoro-Timer wurde gestoppt.")

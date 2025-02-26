@@ -53,26 +53,20 @@ class VoiceGenerator:
         """Worker-Thread, der Texte in Audio umwandelt und zur Wiedergabe vorbereitet"""
         while self.active:
             try:
-                # Hole den nächsten Text aus der Queue (mit 0.5s Timeout)
                 text = self.text_queue.get(timeout=0.5)
                 
-                # Überspringe leeren Text
                 if not text.strip():
                     self.text_queue.task_done()
                     continue
                 
-                # Generiere Sprache und bereite MP3 vor
                 audio_data = self._generate_speech(text)
                 
                 if audio_data:
-                    # Füge die vorbereitete Audiodatei in die Abspiel-Queue ein
                     self.audio_queue.put((text, audio_data))
                 
-                # Markiere Aufgabe als erledigt
                 self.text_queue.task_done()
                 
             except queue.Empty:
-                # Queue Timeout, setze Schleife fort
                 pass
             except Exception as e:
                 print(f"❌ TTS-Verarbeitungsfehler: {e}")
