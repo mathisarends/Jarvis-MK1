@@ -1,16 +1,19 @@
 from collections import deque
+from datetime import datetime
 import json
 import re
+import traceback
 from openai import OpenAI
 from agents.tools.fitbit.fitbit_tool import FitbitTool
-from agents.tools.google.youtube_tool import YoutubeTool
+from agents.tools.google.tools.google_calendar_tool import GoogleCalendarTool
+from agents.tools.google.tools.youtube_tool import YoutubeTool
 from agents.tools.notion.tools.notion_clipboard_tool import NotionClipboardTool
 from agents.tools.notion.tools.notion_idea_tool import NotionIdeaTool
 from agents.tools.notion.tools.notion_todo_tool import NotionTodoTool
 from agents.tools.pomodoro.pomodoro_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
-from agents.tools.google.gmail_reader_tool import GmailReaderTool
+from agents.tools.google.tools.gmail_reader_tool import GmailReaderTool
 from voice_generator import VoiceGenerator
 
 from agents.tools.core.tool_registry import ToolRegistry
@@ -50,12 +53,24 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(NotionClipboardTool())
         self.tool_registry.register_tool(NotionIdeaTool())
         self.tool_registry.register_tool(NotionTodoTool())
+        self.tool_registry.register_tool(GoogleCalendarTool())
+        
+    def get_system_prompt_with_current_date(self):
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        return (
+            f"{self.system_prompt}\n\n"
+            f"Note: The current date is {current_date}. "
+            f"Use this as reference for any date-related reasoning."
+        )
     
     async def get_streaming_response(self, user_input: str):
         """Gets a streaming response from OpenAI for the final response"""
         try:
-            # First handle any tool calls as before
-            messages = [{"role": "system", "content": self.system_prompt}]
+            messages = [
+                {"role": "system", "content": self.get_system_prompt_with_current_date()}
+            ]
+            
             for user_msg, ai_msg in self.history:
                 messages.append({"role": "user", "content": user_msg})
                 messages.append({"role": "assistant", "content": ai_msg})
@@ -71,10 +86,8 @@ class OpenAIChatAssistant:
             assistant_message = response.choices[0].message
 
             if not assistant_message.tool_calls:
-                # For responses without tool calls, use streaming
                 return self._stream_response(messages)
 
-            # Handle tool calls
             for tool_call in assistant_message.tool_calls:
                 tool = self.tool_registry.get_tool(tool_call.function.name)
                 if not tool:
@@ -152,7 +165,12 @@ class OpenAIChatAssistant:
             return full_response
             
         except Exception as e:
-            return f"Fehler beim Streamen der Antwort: {str(e)}"
+            error_message = f"❌ Fehler: {str(e)}"
+            detailed_trace = traceback.format_exc()  # Stacktrace erfassen
+            print(error_message)
+            print(detailed_trace)  # Stacktrace in die Konsole ausgeben
+            return f"{error_message}\n{detailed_trace}"
+
 
     def _create_chat_stream(self, messages):
         """Erstellt den Chat-Stream mit der OpenAI API"""

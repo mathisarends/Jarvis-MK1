@@ -3,7 +3,6 @@ from wakeword_listener import WakeWordListener
 from whisper_speech_recognition import WhuisperSpeechRecognition
 from chat_assistant import OpenAIChatAssistant
 
-
 async def main():
     wakeword_listener = WakeWordListener(wakeword="jarvis")
     speech_recognizer = WhuisperSpeechRecognition()

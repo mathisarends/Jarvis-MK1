@@ -4,7 +4,7 @@ from agents.tools.core.tool_definition import ToolDefinition
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_response import ToolResponse
-from agents.tools.google.gmail_reader.gmail_reader import GmailReader
+from agents.tools.google.clients.gmail_reader import GmailReader
 
 class GmailReaderTool(Tool):
     def __init__(self):
