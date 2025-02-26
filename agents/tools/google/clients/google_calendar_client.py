@@ -39,10 +39,9 @@ class GoogleCalendarClient:
             start: Optional[str] = event["start"].get("dateTime", event["start"].get("date"))
             summary: str = event.get("summary", "Kein Titel")
 
-            # Falls nur ein Datum existiert (ganztägiges Event)
             if "dateTime" in event["start"]:
                 start_dt = datetime.fromisoformat(start).astimezone(self.local_tz)  
-                formatted_time = start_dt.strftime("%H:%M Uhr")  
+                formatted_time = start_dt.strftime("%H:%M Uhr")
             else:
                 formatted_time = "Ganztägig"
 
@@ -55,7 +54,6 @@ class GoogleCalendarClient:
         start_time: Union[str, datetime],
         title: str = "Neuer Termin",
         duration_hours: float = 1.5,
-        timezone_str: str = "Europe/Berlin"
     ) -> Dict:
 
         if isinstance(start_time, str):

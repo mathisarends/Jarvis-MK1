@@ -142,35 +142,24 @@ class VoiceGenerator:
                 audio_io.close()
 
     def speak(self, text):
-        """Fügt einen Text zur Sprachqueue für die Verarbeitung hinzu"""
-        if text.strip():
-            self.text_queue.put(text)
-    
-    def is_queue_empty(self):
-        """Prüft, ob alle Queues leer sind"""
-        return self.text_queue.empty() and self.audio_queue.empty()
-    
-    def wait_until_done(self, timeout=None):
-        """Wartet, bis alle Sprachanfragen abgearbeitet sind"""
-        start_time = time.time()
-        while not self.is_queue_empty():
-            time.sleep(0.1)
-            if timeout and (time.time() - start_time > timeout):
-                return False
-        return True
+        """Fügt einen Text zur Sprachqueue für die Verarbeitung hinzu.
+        interrupt=True bewirkt, dass vorherige Aufträge abgebrochen werden."""
+        if not text.strip():
+            return
+
+        self._interrupt_playback()  
+        self.text_queue.put(text)
             
-    def stop(self):
-        """Stoppt alle Worker-Threads"""
-        self.active = False
-        if hasattr(self, 'tts_worker') and self.tts_worker.is_alive():
-            self.tts_worker.join(timeout=2.0)
-        if hasattr(self, 'playback_worker') and self.playback_worker.is_alive():
-            self.playback_worker.join(timeout=2.0)
-        
-        # Bereinige den Cache-Ordner
-        for filename in os.listdir(self.cache_dir):
-            if filename.startswith("tts_") and filename.endswith(".mp3"):
-                try:
-                    os.remove(os.path.join(self.cache_dir, filename))
-                except:
-                    pass
+    def _interrupt_playback(self):
+        with self._audio_lock:
+            if pygame.mixer.get_init():
+                pygame.mixer.music.stop()
+
+        # 2. Queues leeren.
+        self._clear_queues()
+
+    def _clear_queues(self):
+        with self.text_queue.mutex:
+            self.text_queue.queue.clear()
+        with self.audio_queue.mutex:
+            self.audio_queue.queue.clear()
