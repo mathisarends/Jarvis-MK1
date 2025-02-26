@@ -5,36 +5,127 @@ from io import BytesIO
 from pydub import AudioSegment
 import pygame
 import threading
+import queue
+import time
+import uuid
 
 class VoiceGenerator:
-    def __init__(self, voice="fable"):
-        """Initializes the TTS generator with OpenAI API and adjustable speed"""
+    def __init__(self, voice="fable", cache_dir="/tmp/tts_cache"):
+        """Initialisiert den TTS Generator mit OpenAI API und Vorausverarbeitung"""
         self.openai = OpenAI()
         self.voice = voice
+        self.cache_dir = cache_dir
+        
+        os.makedirs(self.cache_dir, exist_ok=True)
+        
         self._setup_ffmpeg()
         self._setup_pygame()
         self._audio_lock = threading.Lock()
-        self.audio_dir = "/tmp"
+        
+        self.text_queue = queue.Queue()
+        self.audio_queue = queue.Queue()  
+        
+        self.active = True
+        self.tts_worker = threading.Thread(target=self._process_tts_queue, daemon=True)
+        self.tts_worker.start()
+        
+        self.playback_worker = threading.Thread(target=self._process_audio_queue, daemon=True)
+        self.playback_worker.start()
         
     def _setup_ffmpeg(self):
-        """Checks and sets FFmpeg path if necessary"""
+        """Überprüft und setzt den FFmpeg-Pfad, falls nötig"""
         ffmpeg_path = shutil.which("ffmpeg")
         if ffmpeg_path:
-            print(f"✅ FFmpeg found: {ffmpeg_path}")
+            print(f"✅ FFmpeg gefunden: {ffmpeg_path}")
         else:
-            print("❌ FFmpeg not found! Please install it or set the path.")
+            print("❌ FFmpeg nicht gefunden! Bitte installieren oder Pfad setzen.")
             os.environ["PATH"] += os.pathsep + r"C:\ffmpeg-2025-02-17-git-b92577405b-essentials_build\bin"
             
     def _setup_pygame(self):
-        """Initializes pygame mixer for audio playback"""
+        """Initialisiert den pygame Mixer für die Audiowiedergabe"""
         try:
             pygame.mixer.quit()  
             pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)
         except Exception as e:
-            print(f"❌ Pygame initialization error: {e}")
-        
-    def _play_audio_thread(self, audio_data):
-        """Handles audio playback in a separate thread"""
+            print(f"❌ Pygame Initialisierungsfehler: {e}")
+    
+    def _process_tts_queue(self):
+        """Worker-Thread, der Texte in Audio umwandelt und zur Wiedergabe vorbereitet"""
+        while self.active:
+            try:
+                # Hole den nächsten Text aus der Queue (mit 0.5s Timeout)
+                text = self.text_queue.get(timeout=0.5)
+                
+                # Überspringe leeren Text
+                if not text.strip():
+                    self.text_queue.task_done()
+                    continue
+                
+                # Generiere Sprache und bereite MP3 vor
+                audio_data = self._generate_speech(text)
+                
+                if audio_data:
+                    # Füge die vorbereitete Audiodatei in die Abspiel-Queue ein
+                    self.audio_queue.put((text, audio_data))
+                
+                # Markiere Aufgabe als erledigt
+                self.text_queue.task_done()
+                
+            except queue.Empty:
+                # Queue Timeout, setze Schleife fort
+                pass
+            except Exception as e:
+                print(f"❌ TTS-Verarbeitungsfehler: {e}")
+    
+    def _process_audio_queue(self):
+        """Worker-Thread, der vorbereitete Audiodateien abspielt"""
+        while self.active:
+            try:
+                # Hole die nächste Audio-Datei aus der Queue
+                text, audio_data = self.audio_queue.get(timeout=0.5)
+                
+                # Spiele die Audio-Datei ab
+                self._play_audio(audio_data)
+                
+                # Markiere Aufgabe als erledigt
+                self.audio_queue.task_done()
+                
+            except queue.Empty:
+                # Queue Timeout, setze Schleife fort
+                pass
+            except Exception as e:
+                print(f"❌ Audio-Wiedergabefehler: {e}")
+    
+    def _generate_speech(self, text):
+        """Generiert Sprache mit OpenAI TTS und gibt das Audio-Segment zurück"""
+        try:
+            # Generiere eine eindeutige ID für diese Anfrage
+            text_hash = str(uuid.uuid4())[:8]
+            cache_path = os.path.join(self.cache_dir, f"tts_{text_hash}.mp3")
+            
+            # Generiere die Sprachdatei mit OpenAI
+            response = self.openai.audio.speech.create(
+                model="tts-1",
+                voice=self.voice,
+                input=text
+            )
+            
+            # Speichere die MP3 im Cache
+            with open(cache_path, "wb") as f:
+                f.write(response.content)
+            
+            # Lade die MP3 direkt aus der API-Antwort
+            audio_stream = BytesIO(response.content)
+            audio = AudioSegment.from_file(audio_stream, format="mp3")
+            
+            return audio
+            
+        except Exception as e:
+            print(f"❌ Fehler bei der Sprachgenerierung: {e}")
+            return None
+    
+    def _play_audio(self, audio_data):
+        """Spielt die Audiodaten ab mit Sperrmechanismus zur Vermeidung überlappender Wiedergabe"""
         with self._audio_lock:
             try:
                 if not pygame.mixer.get_init():
@@ -51,35 +142,41 @@ class VoiceGenerator:
                     pygame.time.wait(100)
                     
             except Exception as e:
-                print(f"❌ Playback error: {e}")
+                print(f"❌ Wiedergabefehler: {e}")
             finally:
                 pygame.mixer.music.stop()
                 audio_io.close()
 
     def speak(self, text):
-        """Generates speech with OpenAI TTS and plays it non-blocking"""
-        try:
-            response = self.openai.audio.speech.create(
-                model="tts-1",
-                voice=self.voice,
-                input=text
-            )
+        """Fügt einen Text zur Sprachqueue für die Verarbeitung hinzu"""
+        if text.strip():
+            self.text_queue.put(text)
+    
+    def is_queue_empty(self):
+        """Prüft, ob alle Queues leer sind"""
+        return self.text_queue.empty() and self.audio_queue.empty()
+    
+    def wait_until_done(self, timeout=None):
+        """Wartet, bis alle Sprachanfragen abgearbeitet sind"""
+        start_time = time.time()
+        while not self.is_queue_empty():
+            time.sleep(0.1)
+            if timeout and (time.time() - start_time > timeout):
+                return False
+        return True
             
-            audio_path = os.path.join(self.audio_dir, "tts_response.mp3")
-            with open(audio_path, "wb") as f:
-                f.write(response.content)
-            
-            
-            # Load MP3 directly from API response
-            audio_stream = BytesIO(response.content)
-            audio = AudioSegment.from_file(audio_stream, format="mp3")
-            
-            # Start playback in a separate thread
-            threading.Thread(
-                target=self._play_audio_thread,
-                args=(audio,),
-                daemon=True
-            ).start()
-            
-        except Exception as e:
-            print(f"❌ Error during speech generation: {e}")
+    def stop(self):
+        """Stoppt alle Worker-Threads"""
+        self.active = False
+        if hasattr(self, 'tts_worker') and self.tts_worker.is_alive():
+            self.tts_worker.join(timeout=2.0)
+        if hasattr(self, 'playback_worker') and self.playback_worker.is_alive():
+            self.playback_worker.join(timeout=2.0)
+        
+        # Bereinige den Cache-Ordner
+        for filename in os.listdir(self.cache_dir):
+            if filename.startswith("tts_") and filename.endswith(".mp3"):
+                try:
+                    os.remove(os.path.join(self.cache_dir, filename))
+                except:
+                    pass
