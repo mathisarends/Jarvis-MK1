@@ -4,12 +4,12 @@ from agents.tools.core.tool_definition import ToolDefinition
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_response import ToolResponse
-from agents.tools.google.youtube_summarizer.youtube_client import YoutubeClient
-from agents.tools.google.youtube_summarizer.youtube_video_summarizer import YoutubeVideoSummarizer
+from agents.tools.google.clients.youtube_video_summarizer import YoutubeVideoSummarizer
+from agents.tools.google.clients.youtube_client import YouTubeClient
 
 class YoutubeTool(Tool):
     def __init__(self):
-        self.youtube_client = YoutubeClient()
+        self.youtube_client = YouTubeClient()
         self.youtube_video_summarizer = YoutubeVideoSummarizer()
         super().__init__()
 

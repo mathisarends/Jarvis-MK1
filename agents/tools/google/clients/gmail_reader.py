@@ -1,42 +1,16 @@
+import sys
 import os
-import pickle
 import base64
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from bs4 import BeautifulSoup  
+from bs4 import BeautifulSoup
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
+from agents.tools.google.core.google_auth import GoogleAuth
 
 class GmailReader:
     """Klasse zum Abrufen ungelesener E-Mails aus der Gmail API"""
 
-    SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-    
     def __init__(self):
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        self.credentials_file = os.path.join(base_dir, "credentials.json")
-        self.token_file = os.path.join(base_dir, "token.pickle")
-        self.service = self.get_gmail_service()
-        
-    def get_gmail_service(self):
-        """Authentifiziert den Nutzer und gibt den Gmail-Service zurück"""
-        creds = None
-
-        if os.path.exists(self.token_file):
-            with open(self.token_file, "rb") as token:
-                creds = pickle.load(token)
-
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, self.SCOPES)
-                creds = flow.run_local_server(port=0)
-
-            with open(self.token_file, "wb") as token:
-                pickle.dump(creds, token)
-
-        return build("gmail", "v1", credentials=creds)
+        self.service = GoogleAuth.get_service("gmail", "v1")
 
     def clean_email_content(self, content):
         lines = content.split("\n")
@@ -60,26 +34,22 @@ class GmailReader:
                 elif part["mimeType"] == "text/html":
                     body = part["body"].get("data")
                     mime_type = "html"
-
         else:
             body = payload["body"].get("data")
             mime_type = payload["mimeType"]
 
         if body:
             decoded_content = base64.urlsafe_b64decode(body).decode("utf-8", errors="ignore")
-
             if mime_type == "text/html" or mime_type == "html":
                 soup = BeautifulSoup(decoded_content, "html.parser")
-                text_content = soup.get_text(separator="\n")  # HTML zu reinem Text umwandeln
+                text_content = soup.get_text(separator="\n")
                 return self.clean_email_content(text_content)
             else:
                 return self.clean_email_content(decoded_content)
 
         return "⚠️ Kein lesbarer Text gefunden."
 
-
     def list_primary_unread_messages(self, max_results=5):
-        """Listet ungelesene E-Mails aus der Kategorie 'Allgemein' auf und gibt sie als String zurück"""
         query = "category:primary is:unread"
         results = self.service.users().messages().list(userId="me", q=query, maxResults=max_results).execute()
         messages = results.get("messages", [])
@@ -107,3 +77,8 @@ class GmailReader:
             output_parts.append("\n".join(email_info))
 
         return "\n".join(output_parts)
+
+# Testlauf
+if __name__ == "__main__":
+    gmail_reader = GmailReader()
+    print(gmail_reader.list_primary_unread_messages(5))
