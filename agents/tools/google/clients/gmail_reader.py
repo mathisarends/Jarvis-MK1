@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 import base64
 import re
+from typing import Optional
 from bs4 import BeautifulSoup
 from rapidfuzz import process, fuzz
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
+from agents.tools.google.clients.email_content_parser import EmailContentParser
 from agents.tools.google.core.google_auth import GoogleAuth
 
 
@@ -34,66 +36,6 @@ class GmailReader:
     def _get_email_details(self, msg_id: str, format_type: str = "full"):
         return self.service.users().messages().get(userId=self.USER_ID, id=msg_id, format=format_type).execute()
 
-    def get_email_content(self, msg):
-        """Extrahiert den lesbaren Inhalt einer E-Mail (bevorzugt text/plain, sonst HTML)."""
-        if "payload" not in msg:
-            return "⚠️ Kein Inhalt gefunden."
-
-        payload = msg["payload"]
-
-        # Falls die Nachricht direkt im Body liegt (selten der Fall)
-        if "body" in payload and payload["body"].get("data"):
-            return self._decode_email_body(payload["body"]["data"])
-
-        # Falls es eine multipart Nachricht ist
-        if "parts" in payload:
-            return self._extract_from_parts(payload["parts"])
-
-        return "⚠️ Kein lesbarer Text gefunden."
-
-    def _extract_from_parts(self, parts):
-        """Geht rekursiv durch die E-Mail-Teile und sucht nach `text/plain` oder `text/html` als Fallback."""
-        text_content = None
-        html_content = None
-
-        for part in parts:
-            mime_type = part.get("mimeType", "")
-            body_data = part.get("body", {}).get("data")
-
-            if body_data:
-                decoded_content = self._decode_email_body(body_data)
-
-                if mime_type == "text/plain":
-                    return decoded_content  # Direkt den ersten `text/plain` zurückgeben
-                elif mime_type == "text/html":
-                    html_content = decoded_content  # Falls kein `text/plain` existiert
-
-            # Falls das aktuelle Part weitere `parts` enthält, rekursiv durchsuchen
-            if "parts" in part:
-                result = self._extract_from_parts(part["parts"])
-                if result:
-                    return result
-
-        # Falls kein `text/plain` gefunden wurde, aber `text/html` existiert → Fallback
-        if html_content:
-            soup = BeautifulSoup(html_content, "html.parser")
-            return soup.get_text(separator="\n").strip()
-
-        return "⚠️ Kein lesbarer Text gefunden."
-
-    def _decode_email_body(self, body_data):
-        """Dekodiert Base64-kodierten E-Mail-Text."""
-        try:
-            decoded_content = base64.urlsafe_b64decode(body_data).decode("utf-8", errors="ignore")
-            return decoded_content.strip() if decoded_content else "⚠️ Kein lesbarer Text gefunden."
-        except Exception as e:
-            return f"⚠️ Fehler beim Dekodieren: {str(e)}"
-
-    @staticmethod
-    def _clean_text(text: str):
-        """Entfernt überflüssige Leerzeilen und leert führende und abschließende Leerzeichen."""
-        return "\n".join(line.strip() for line in text.split("\n") if line.strip())
-
     @staticmethod
     def _extract_email_address(sender_string: str):
         match = re.search(r'<?([\w\.-]+@[\w\.-]+\.\w+)>?', sender_string)
@@ -113,11 +55,11 @@ class GmailReader:
         subject = next((h["value"] for h in headers if h["name"] == "Subject"), "Kein Betreff")
         sender = next((h["value"] for h in headers if h["name"] == "From"), "Unbekannter Absender")
         date = next((h["value"] for h in headers if h["name"] == "Date"), "Kein Datum")
-        content = self.get_email_content(msg_data)
+        content = EmailContentParser.parse_email_content(msg_data)
 
         return f"Betreff: {subject}\nVon: {sender}\nDatum: {date}\nInhalt:\n{content}\n{'=' * 80}"
     
-    def get_closest_sender(self, sender_name: str) -> str:
+    def get_closest_sender(self, sender_name: str) -> Optional[str]:
         """Findet die ähnlichste E-Mail-Adresse basierend auf dem eingegebenen Namen."""
         senders = self.get_senders_from_last_week()
         
@@ -168,10 +110,10 @@ class GmailReader:
 if __name__ == "__main__":
     gmail_reader = GmailReader()
     
-    print(gmail_reader.get_unread_primary_emails())
+    # print(gmail_reader.get_unread_primary_emails())
     # print(gmail_reader.get_senders_from_last_week())
     # print(gmail_reader.get_emails_from_sender("mathisarends27@gmail.com"))
     
-    # matched_sender  = gmail_reader.get_closest_sender("Mathis Ahrens")
-    # result = gmail_reader.get_emails_from_sender(matched_sender)
-    # print(result)
+    matched_sender  = gmail_reader.get_closest_sender("Mathis Ahrens")
+    result = gmail_reader.get_emails_from_sender(matched_sender)
+    print(result)
