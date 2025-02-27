@@ -8,7 +8,6 @@ class TextToSpeechStreamer:
         self.OPTIMAL_CHUNK_SIZE = optimal_chunk_size
         self.MAX_CHUNK_SIZE = max_chunk_size
         
-        # Natürliche Unterbrechungsmuster in Präferenzreihenfolge
         self.BREAK_PATTERNS = [
             r'(?<=[.!?])\s+(?=[A-Z"„\'])',
             r'(?<=[.!?])\s+',

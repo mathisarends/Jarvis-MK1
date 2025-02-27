@@ -11,7 +11,6 @@ from agents.tools.pomodoro.pomodoro_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
 from agents.tools.weather.weather_tool import WeatherTool
 
-
 class ToolFactory:
     @staticmethod
     def create_notion_tools():
