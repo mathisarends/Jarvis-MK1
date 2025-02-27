@@ -1,13 +1,14 @@
 from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
 from agents.tools.notion.core.notion_markdown_parser import NotionMarkdownParser
+from agents.tools.notion.core.notion_pages import NotionPages
 
 
 class NotionClipboardManager(AbstractNotionClient):
     """Class for managing clipboard content in Notion."""
     
-    def __init__(self, clipboard_page_id="1a3389d5-7bd3-80d7-a507-e67d1b25822c"):
+    def __init__(self):
         super().__init__()
-        self.clipboard_page_id = clipboard_page_id
+        self.clipboard_page_id = NotionPages.get_page_id("JARVIS_CLIPBOARD")
     
     def append_to_clipboard(self, text):
         """Appends formatted text to the clipboard page with a divider."""

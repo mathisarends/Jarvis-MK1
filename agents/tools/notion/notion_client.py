@@ -14,22 +14,18 @@ if __name__ == "__main__":
     clipboard_manager = NotionClipboardManager()
     idea_manager = NotionIdeaManager()
     
-#     markdown_text = """
-# # Überschrift 1
-# ## Überschrift 2
-# **Fett**
-# *Kursiv*
-# - Liste
-# - Noch ein Punkt
-# > Ein Zitat
-# `Inline-Code`
-# """
+    markdown_text = """
+# Überschrift 1
+## Überschrift 2
+**Fett**
+*Kursiv*
+- Liste
+- Noch ein Punkt
+> Ein Zitat
+`Inline-Code`
+"""
     
     
-#     # clipboard_manager.append_to_clipboard(markdown_text)      
-#     result = todo_manager.get_entries_and_delete_completed()    
-#     print(result)
-    
-        
-        # Alle wichtigen Seiten & Datenbanken ausgeben
-    print(NotionPages.list_all())
+    # clipboard_manager.append_to_clipboard(markdown_text)      
+    # result = todo_manager.get_entries_and_delete_completed()    
+    # print(result)

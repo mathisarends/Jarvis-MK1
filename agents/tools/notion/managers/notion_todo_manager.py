@@ -1,106 +1,121 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
 import concurrent.futures
 from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
+from agents.tools.notion.core.notion_pages import NotionPages
 
 
 class NotionTodoManager(AbstractNotionClient):
-    
-    def __init__(self, database_id="1a1389d5-7bd3-80b7-9980-ca8ebd734ce2"):
+    def __init__(self):
         super().__init__()
-        self.database_id = database_id
-    
-    def get_entries_and_delete_completed(self):
-        """Holt alle Einträge aus der To-Do-Datenbank und löscht erledigte Aufgaben parallel."""
-        response = self._make_request(
-            "post", 
-            f"databases/{self.database_id}/query"
-        )
+        self.database_id = NotionPages.get_database_id("TODOS")  
 
-        if response.status_code != 200:
-            self.logger.error(f"Error retrieving entries: {response.text}")
-            return f"Error retrieving entries: {response.text}"
-
-        entries = response.json()["results"]
-        if not entries:
-            self.logger.info("No entries found in the database.")
-            return "No entries found in the database."
-
-        formatted_entries = []
-        completed_pages = []  # Liste für erledigte Seiten (zum parallelen Löschen)
-
-        for entry in entries:
-            properties = entry["properties"]
-            page_id = entry["id"]
-            is_completed = properties.get("Kontrollkästchen", {}).get("checkbox", False)
-
-            if is_completed:
-                completed_pages.append(page_id)
-                continue  # Löschen wird später parallel durchgeführt
-
-            title_property = properties["Idee"]["title"]
-            title = title_property[0]["text"]["content"] if title_property else "Unnamed Entry"
-            status = properties["Status"]["status"]["name"] if "Status" in properties else "No Status"
-            priority = properties["Priorität"]["select"]["name"] if "Priorität" in properties and properties["Priorität"]["select"] else "No Priority"
-
-            formatted_entries.append(f"- {title} (Status: {status} | Priority: {priority})")
-
-        # Parallel erledigte Einträge löschen
-        self._delete_pages_concurrently(completed_pages)
-
-        return "\nDatabase Entries:\n" + "\n".join(formatted_entries)
-
-    def _delete_pages_concurrently(self, page_ids):
-        """Löscht erledigte Einträge parallel mit ThreadPoolExecutor."""
-        if not page_ids:
-            return
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:  # Max 5 parallele Anfragen
-            future_to_page = {executor.submit(self.delete_page, page_id): page_id for page_id in page_ids}
-
-            for future in concurrent.futures.as_completed(future_to_page):
-                page_id = future_to_page[future]
-                try:
-                    future.result()
-                except Exception as e:
-                    self.logger.error(f"Error deleting page {page_id}: {e}")
-
-    def delete_page(self, page_id):
-        """Löscht eine einzelne Notion-Seite."""
-        response = self._make_request(
-            "patch", 
-            f"pages/{page_id}", 
-            {"archived": True}
-        )
-
-        if response.status_code == 200:
-            self.logger.info(f"Successfully deleted page: {page_id}")
-        else:
-            self.logger.error(f"Error deleting page {page_id}: {response.text}")
-
-    def add_entry(self, idea):
-        """Adds a new todo entry to the database."""
-        status = "Neu"
-        priority = "Mittel"
+    def add_todo(self, title, priority="Mittel", status="Nicht begonnen", done=False):
+        """Adds a new TODO to the database with priority and status."""
         
         data = {
             "parent": {"database_id": self.database_id},
             "properties": {
-                "Idee": {
-                    "title": [{"text": {"content": idea}}]
-                },
-                "Status": {
-                    "status": {"name": status}  
+                "Titel": {
+                    "title": [{"text": {"content": title}}]
                 },
                 "Priorität": {
-                    "select": {"name": priority}  
+                    "select": {"name": priority}
+                },
+                "Status": {
+                    "status": {"name": status}
+                },
+                "Fertig": {
+                    "checkbox": done
                 }
             }
         }
+
+        try:
+            response = self._make_request("post", "pages", data)
+
+            if response.status_code == 200:
+                self.logger.info(f"✅ TODO added: {title}")
+                return f"✅ TODO '{title}' added successfully."
+            else:
+                self.logger.error(f"❌ Error adding TODO: {response.text}")
+                return f"❌ Error adding TODO: {response.text}"
+
+        except Exception as e:
+            self.logger.error(f"❌ API call failed: {str(e)}")
+            return f"❌ API call failed: {str(e)}"
+
+    def get_all_todos(self):
+        """Retrieves only open TODOs (Fertig = False) and sorts them by priority."""
+        raw_todos = self._get_raw_todos()
+        return self._format_todo_list(raw_todos)
+
+    def get_daily_top_tasks(self):
+        """Retrieves only TODOs with the priority 'Daily Top Task'."""
+        try:
+            raw_todos = self._get_raw_todos()  # Holt die unbearbeitete Liste
+            daily_top_tasks = [todo for todo in raw_todos if todo["priority"] == "Daily Top Task"]
+
+            return self._format_todo_list(daily_top_tasks)
+
+        except Exception as e:
+            self.logger.error(f"❌ API call failed: {str(e)}")
+            return f"API call failed: {str(e)}"
         
-        response = self._make_request("post", "pages", data)
+    def _get_raw_todos(self):
+        """Helper function to retrieve raw TODOs as a list."""
+        try:
+            response = self._make_request("post", f"databases/{self.database_id}/query")
+
+            if response.status_code != 200:
+                self.logger.error(f"❌ Error retrieving TODOs: {response.text}")
+                return []
+
+            results = response.json().get("results", [])
+            
+            priority_order = {
+                "Daily Top Task": 1,
+                "Hoch": 2,
+                "Mittel": 3,
+                "Niedrig": 4
+            }
+
+            open_todos = [
+                {
+                    "id": item["id"],
+                    "title": item["properties"]["Titel"]["title"][0]["text"]["content"],
+                    "priority": item["properties"]["Priorität"]["select"]["name"],
+                    "status": item["properties"]["Status"]["status"]["name"],
+                    "done": item["properties"]["Fertig"]["checkbox"]
+                }
+                for item in results if not item["properties"]["Fertig"]["checkbox"]
+            ]
+
+            open_todos.sort(key=lambda todo: priority_order.get(todo["priority"], 99))
+            return open_todos
+
+        except Exception as e:
+            self.logger.error(f"❌ API call failed: {str(e)}")
+            return []
+
+
+    def _format_todo_list(self, todos):
+        """Formats the TODO list into a readable string without icons."""
+        if not todos:
+            return "Keine offenen TODOs vorhanden."
+
+        formatted_todos = [f"{todo['title']} (Priorität: {todo['priority']}, Status: {todo['status']})"
+                           for todo in todos]
         
-        if response.status_code == 200:
-            self.logger.info(f"Successfully added entry: {idea}")
-            return f"Successfully added entry: {idea}"
-        else:
-            self.logger.error(f"Error adding entry: {response.text}")
-            return f"Error adding entry: {response.text}"
+        return "\n".join(formatted_todos)
+        
+        
+if __name__ == "__main__":
+    manager = NotionTodoManager()
+
+    print("📌 **Alle offenen TODOs:**")
+    print(manager.get_all_todos())
+
+    print("\n🔥 **Daily Top Tasks:**")
+    print(manager.get_daily_top_tasks())
