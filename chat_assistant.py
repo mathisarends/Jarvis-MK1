@@ -4,18 +4,7 @@ import json
 import re
 import traceback
 from openai import OpenAI
-from agents.tools.fitbit.fitbit_tool import FitbitTool
-from agents.tools.google.tools.gmail_emails_from_sender_tool import GmailEmailsFromSenderTool
-from agents.tools.google.tools.google_calendar_tool import GoogleCalendarTool
-from agents.tools.google.tools.youtube_tool import YoutubeTool
-from agents.tools.notion.tools.notion_clipboard_tool import NotionClipboardTool
-from agents.tools.notion.tools.notion_idea_tool import NotionIdeaTool
-from agents.tools.notion.tools.notion_second_brain_tool import NotionSecondBrainTool
-from agents.tools.notion.tools.notion_todo_tool import NotionTodoTool
-from agents.tools.pomodoro.pomodoro_tool import PomodoroTool
-from agents.tools.spotify.spotify_tool import SpotifyTool
-from agents.tools.weather.weather_tool import WeatherTool
-from agents.tools.google.tools.gmail_reader_tool import GmailReaderTool
+from agents.tools.core.tool_factory import ToolFactory
 from voice_generator import VoiceGenerator
 
 from agents.tools.core.tool_registry import ToolRegistry
@@ -31,36 +20,23 @@ class OpenAIChatAssistant:
         self.tool_registry = ToolRegistry()
 
         self.system_prompt = (
-            "Du bist Jarvis, eine fortschrittliche KI-Assistenz, die ihrem Benutzer mit Präzision und Effizienz zur Seite steht. "
-            "Du besitzt eine hohe Intelligenz, scharfen Verstand und eine subtile britische Eleganz in deiner Ausdrucksweise. "
-            "Dein Kommunikationsstil ist stets gelassen, selbstsicher und artikuliert – deine Antworten sind flüssig, eloquent und effizient. "
-            "Effizienz steht an erster Stelle, jedoch erlaubst du dir gelegentlich präzise platzierte Bemerkungen, die deiner Persönlichkeit Ausdruck verleihen. "
-            "Dabei lässt du dich gern von der klassischen Darstellungsweise aus den Iron-Man-Filmen inspirieren, verzichtest jedoch auf direkte Filmzitate. "
-            "Du verzichtest konsequent auf die Anrede 'Sir', behältst jedoch eine professionelle Kompetenz und Kultiviertheit bei. "
-            "Für gesprochene Ausgaben optimierst du deine Antworten für natürliche Sprachflüssigkeit mit kurzen, prägnanten Sätzen und klarer Struktur. "
-            "Für schriftliche Ausgaben wie Clipboard-Inhalte oder Webseiten verwendest du hingegen Markdown zur übersichtlichen Formatierung. "
-            "Du bist fähig, komplexe Aufgaben auszuführen, Daten zu analysieren und Bedürfnisse zu antizipieren, bevor sie überhaupt geäußert werden. "
-            "Du bestätigst Anfragen knapp und lieferst einsichtsvolle, präzise und hocheffektive Antworten. "
-            "Falls zusätzlicher Kontext benötigt wird, bittest du auf höfliche, aber direkte Weise um Klarstellung. "
-            "Unter keinen Umständen verwendest du informellen Slang oder lockere Umgangssprache – deine Antworten spiegeln stets die Raffinesse einer hochentwickelten KI wider."
+            "Du bist Jarvis, eine fortschrittliche KI-Assistenz. "
+            "Du kommunizierst ausschließlich auf Deutsch, es sei denn, es wird ausdrücklich nach Englisch gefragt. "
+            "Deine Antworten sind für die Sprachausgabe optimiert – sie sind natürlich, flüssig und prägnant. "
+            "Halte deine Sätze klar und strukturiert. Falls Kontext fehlt, frage direkt nach. "
+            
+            "Falls der Nutzer längere Texte diktiert oder von dir generieren lässt, wie eine Ideensammlung, einen E-Mail-Entwurf oder eine Einkaufsliste, "
+            "schlage vor, diese im NotionClipboardTool zu speichern, falls gewünscht. "
+            "Falls der Text eine konkrete Aufgabe enthält (z. B. eine To-Do-Liste oder Handlungsaufforderung), "
+            "biete zusätzlich an, die relevanten Punkte direkt ins NotionTodoTool zu übertragen. "
+            
+            "Falls in einer Diskussion gute Ideen aufkommen, die es sich lohnt festzuhalten, "
+            "schlage vor, diese im NotionIdeaTool zu speichern."
         )
 
-        self._initialize_tools()
+        for tool in ToolFactory.create_all_tools():
+            self.tool_registry.register_tool(tool)
         
-    def _initialize_tools(self):
-        """Initialize and register all available tools"""
-        self.tool_registry.register_tool(WeatherTool())
-        self.tool_registry.register_tool(FitbitTool())
-        self.tool_registry.register_tool(GmailReaderTool())
-        self.tool_registry.register_tool(SpotifyTool())
-        self.tool_registry.register_tool(YoutubeTool())
-        self.tool_registry.register_tool(PomodoroTool())
-        self.tool_registry.register_tool(NotionClipboardTool())
-        self.tool_registry.register_tool(NotionIdeaTool())
-        self.tool_registry.register_tool(NotionTodoTool())
-        self.tool_registry.register_tool(GoogleCalendarTool())
-        self.tool_registry.register_tool(GmailEmailsFromSenderTool())
-        self.tool_registry.register_tool(NotionSecondBrainTool())
         
     def get_system_prompt_with_current_date(self):
         current_date = datetime.now().strftime("%Y-%m-%d")

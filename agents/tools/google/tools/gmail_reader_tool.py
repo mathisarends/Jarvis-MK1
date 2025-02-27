@@ -25,14 +25,13 @@ class GmailReaderTool(Tool):
         )
 
     async def execute(self, parameters: Dict[str, Any]) -> ToolResponse:
-        email_behavior = """
-        When presenting unread emails:
-        1. Summarize key details: sender, subject, and a brief snippet.
-        2. If multiple emails are listed, format them in a clear, numbered structure.
-        3. If no unread emails are found, reassure the user with a concise message.
-        4. Use phrases like "You have X unread emails" or "Your latest unread messages are..."
-        5. If emails contain urgent keywords (e.g., 'urgent', 'important'), highlight them.
-        """
+        email_behavior = (
+            "Fasse die ungelesenen E-Mails prägnant zusammen. "
+            "Gib den Absender, den Betreff und eine kurze Inhaltsvorschau an. "
+            "Falls mehrere E-Mails vorhanden sind, trenne sie klar, aber nummeriere sie nicht. "
+            "Falls keine ungelesenen E-Mails vorhanden sind, informiere den Nutzer knapp und sachlich. "
+            "Falls eine Nachricht als dringend erkennbar ist (z. B. durch Begriffe wie 'dringend' oder 'wichtig'), hebe dies hervor."
+        )
 
         try:
             max_results = parameters.get("max_results", 5)
