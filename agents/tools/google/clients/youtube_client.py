@@ -1,6 +1,7 @@
 import sys
 import os
 
+from agents.tools.shared.string_matcher import StringMatcher
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
 from agents.tools.google.core.google_auth import GoogleAuth
 
@@ -11,7 +12,36 @@ class YouTubeClient:
         """Initialisiert den YouTube-Dienst mit globaler Authentifizierung"""
         self.service = GoogleAuth.get_service("youtube", "v3")
 
-    def get_videos_from_playlist(self, playlist_id, max_results=5):
+    def get_liked_videos(self, max_results=5):
+        """Ruft die zuletzt geliketen Videos ab"""
+        return self._get_videos_from_playlist("LL", max_results)
+    
+    def get_formatted_liked_videos(self, max_results=5):
+        liked_videos = self.get_liked_videos(max_results)
+
+        if not liked_videos:
+            return "Keine geliketen Videos gefunden."
+
+        return "\n".join(
+            f"- {video['title']} | {video['channel']} | {video['url']}"
+            for video in liked_videos
+        )
+
+    def find_last_watched_video_by(self, channel_name):        
+        videos = self.get_liked_videos()
+        channel_names = [video["channel"] for video in videos]
+        
+        matcher = StringMatcher(channel_names)
+        best_match = matcher.find_best_match(channel_name)
+
+        if best_match:
+            for video in videos:
+                if video["channel"] == best_match:
+                    return video["url"]
+
+        return None
+    
+    def _get_videos_from_playlist(self, playlist_id, max_results=5):
         """Ruft Videos aus einer bestimmten Playlist ab"""
         request = self.service.playlistItems().list(
             part="snippet",
@@ -40,21 +70,8 @@ class YouTubeClient:
             })
         return videos
 
-    def get_liked_videos(self, max_results=5):
-        """Ruft die zuletzt geliketen Videos ab"""
-        return self.get_videos_from_playlist("LL", max_results)
-
-    def find_last_watched_video_by(self, channel_name):
-        """Sucht das letzte Video eines bestimmten Kanals in den geliketen Videos"""
-        videos = self.get_liked_videos()
-        for video in videos:
-            if channel_name.lower() in video["channel"].lower():
-                return video["url"]
-        return None
-
 # Testlauf
 if __name__ == "__main__":
     yt_client = YouTubeClient()
     liked_videos = yt_client.get_liked_videos()
-    for video in liked_videos:
-        print(f"- {video['title']} (von {video['channel']}): {video['url']}")
+    print(liked_videos)

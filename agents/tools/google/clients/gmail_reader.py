@@ -1,24 +1,50 @@
 from datetime import datetime, timedelta
-import base64
 import re
 from typing import Optional
-from bs4 import BeautifulSoup
-from rapidfuzz import process, fuzz
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
 from agents.tools.google.clients.email_content_parser import EmailContentParser
 from agents.tools.google.core.google_auth import GoogleAuth
+from agents.tools.shared.string_matcher import StringMatcher
+
 
 
 class GmailReader:
     """Klasse zum Abrufen und Verarbeiten von E-Mails aus der Gmail API."""
 
-    MAX_RESULTS = 500  # Standardmäßig werden maximal 500 Ergebnisse abgerufen.
+    MAX_RESULTS = 500
     USER_ID = "me"
 
     def __init__(self):
         self.service = GoogleAuth.get_service("gmail", "v1")
+        
+    def get_unread_primary_emails(self, max_results: int = 5):
+        messages = self._get_messages("category:primary is:unread", max_results)
+        if not messages:
+            return "📭 Keine ungelesenen E-Mails in 'Allgemein' gefunden."
+
+        return "\n".join(self._format_email(msg["id"]) for msg in messages)
+    
+    def get_closest_sender(self, sender_name: str) -> Optional[str]:
+        senders = self._get_senders_from_last_week()
+
+        if not senders:
+            return None
+
+        matcher = StringMatcher(senders)
+        return matcher.find_best_match(sender_name)
+    
+    def get_emails_from_sender(self, sender_email: str, days: int = 7):
+        """Ruft E-Mails von einem bestimmten Absender in den letzten X Tagen ab."""
+        start_date = (datetime.now() - timedelta(days=days)).strftime('%Y/%m/%d')
+        messages = self._get_messages(f"from:{sender_email} after:{start_date}")
+
+        if not messages:
+            return f"📭 Keine E-Mails von {sender_email} in den letzten {days} Tagen gefunden."
+
+        emails = [self._format_email(msg["id"]) for msg in messages]
+        return f"📧 Gefundene E-Mails von {sender_email} (letzte {days} Tage):\n{'=' * 80}\n" + "\n".join(emails)
 
     def _get_messages(self, query: str, max_results: int = MAX_RESULTS):
         messages = []
@@ -41,13 +67,6 @@ class GmailReader:
         match = re.search(r'<?([\w\.-]+@[\w\.-]+\.\w+)>?', sender_string)
         return match.group(1) if match else sender_string
 
-    def get_unread_primary_emails(self, max_results: int = 5):
-        messages = self._get_messages("category:primary is:unread", max_results)
-        if not messages:
-            return "📭 Keine ungelesenen E-Mails in 'Allgemein' gefunden."
-
-        return "\n".join(self._format_email(msg["id"]) for msg in messages)
-
     def _format_email(self, msg_id: str):
         msg_data = self._get_email_details(msg_id)
         headers = msg_data["payload"]["headers"]
@@ -59,20 +78,10 @@ class GmailReader:
 
         return f"Betreff: {subject}\nVon: {sender}\nDatum: {date}\nInhalt:\n{content}\n{'=' * 80}"
     
-    def get_closest_sender(self, sender_name: str) -> Optional[str]:
-        """Findet die ähnlichste E-Mail-Adresse basierend auf dem eingegebenen Namen."""
-        senders = self.get_senders_from_last_week()
-        
-        if not senders:
-            return None
 
-        sender_list = [email.strip("<>") for email in senders.split("\n") if "@" in email]
 
-        closest_match = process.extractOne(sender_name, sender_list, scorer=fuzz.partial_ratio, score_cutoff=60)
 
-        return closest_match[0] if closest_match else None
-
-    def get_senders_from_last_week(self):
+    def _get_senders_from_last_week(self):
         one_week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y/%m/%d')
         messages = self._get_messages(f"after:{one_week_ago}")
 
@@ -87,33 +96,14 @@ class GmailReader:
             for msg in messages
         }
 
-        return self._format_sender_list(sender_addresses)
-
-    @staticmethod
-    def _format_sender_list(senders):
-        if not senders:
-            return "📭 Keine Absender gefunden."
-        return f"📧 Gefundene Absender aus der letzten Woche ({len(senders)}):\n" + "\n".join(f"- {email}" for email in sorted(senders))
-
-    def get_emails_from_sender(self, sender_email: str, days: int = 7):
-        """Ruft E-Mails von einem bestimmten Absender in den letzten X Tagen ab."""
-        start_date = (datetime.now() - timedelta(days=days)).strftime('%Y/%m/%d')
-        messages = self._get_messages(f"from:{sender_email} after:{start_date}")
-
-        if not messages:
-            return f"📭 Keine E-Mails von {sender_email} in den letzten {days} Tagen gefunden."
-
-        emails = [self._format_email(msg["id"]) for msg in messages]
-        return f"📧 Gefundene E-Mails von {sender_email} (letzte {days} Tage):\n{'=' * 80}\n" + "\n".join(emails)
-
+        return sorted(sender_addresses) if sender_addresses else []
 
 if __name__ == "__main__":
     gmail_reader = GmailReader()
     
-    # print(gmail_reader.get_unread_primary_emails())
+    print(gmail_reader.get_unread_primary_emails())
     # print(gmail_reader.get_senders_from_last_week())
     # print(gmail_reader.get_emails_from_sender("mathisarends27@gmail.com"))
-    
-    matched_sender  = gmail_reader.get_closest_sender("Mathis Ahrens")
+    matched_sender  = gmail_reader.get_closest_sender("finanzguru")
     result = gmail_reader.get_emails_from_sender(matched_sender)
     print(result)

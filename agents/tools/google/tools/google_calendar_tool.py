@@ -13,12 +13,6 @@ class GoogleCalendarTool(Tool):
         super().__init__()
 
     def get_definition(self) -> ToolDefinition:
-        """
-        Definiert das Tool für OpenAI:
-        - action: 'get_events' oder 'create_event'
-        - max_results: Nur relevant bei 'get_events'
-        - title, start_time, duration_hours: Nur relevant bei 'create_event'
-        """
         return ToolDefinition(
             name="google_calendar_tool",
             description="Retrieves today's events from Google Calendar or creates a new event.",

@@ -45,14 +45,8 @@ class YoutubeTool(Tool):
         action = parameters.get("action")
         if action == "get_liked_videos":
             max_results = parameters.get("max_results", 5)
-            liked_videos = self.youtube_client.get_liked_videos(max_results)
-            if not liked_videos:
-                return ToolResponse("No liked videos found.")
-            video_list = "\n".join([
-                f"{i+1}. {video['title']} (by {video['channel']}"
-                for i, video in enumerate(liked_videos)
-            ])
-            return ToolResponse(f"Your recently liked videos:\n\n{video_list}")
+            liked_videos = self.youtube_client.get_formatted_liked_videos(max_results)
+            return ToolResponse(f"Your recently liked videos:\n\n{liked_videos}")
         elif action == "summarize_video":
             channel_name = parameters.get("channel_name")
             if not channel_name:

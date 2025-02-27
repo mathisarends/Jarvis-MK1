@@ -36,7 +36,6 @@ class GmailEmailsFromSenderTool(Tool):
 
             print(f"🔍 Searching for sender: {sender_name} (last {days} days)")
 
-            # Versuche, die richtige E-Mail-Adresse zu ermitteln
             sender_email = self.gmail_reader.get_closest_sender(sender_name)
 
             if not sender_email:
@@ -47,7 +46,6 @@ class GmailEmailsFromSenderTool(Tool):
 
             print(f"✅ Found matching email: {sender_email}")
 
-            # Abrufen der E-Mails mit der gefundenen E-Mail-Adresse
             emails = self.gmail_reader.get_emails_from_sender(sender_email, days)
 
             if not emails:
