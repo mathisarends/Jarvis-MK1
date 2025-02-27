@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
 
-
 class NotionIdeaManager(AbstractNotionClient):
     """Class for managing ideas in a Notion database."""
     

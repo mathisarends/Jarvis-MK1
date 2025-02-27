@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
+import json
+
 from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
 
 class NotionUtility(AbstractNotionClient):
@@ -36,6 +41,22 @@ class NotionUtility(AbstractNotionClient):
 
         return response.json()
     
+    def format_page_children(self, response_json):
+        """Parses and formats Notion page children to display only databases with their IDs."""
+        results = response_json.get("results", [])
+        
+        databases = []
+        for block in results:
+            if block["type"] == "child_database":
+                db_name = block["child_database"]["title"]
+                db_id = block["id"]
+                databases.append(f"- {db_name} (ID: {db_id})")
+
+        if not databases:
+            return "No databases found on this page."
+
+        return "\nAccessible Databases:\n" + "\n".join(databases)
+    
     def get_database_schema(self, database_id):
         response = self._make_request("get", f"databases/{database_id}")
 
@@ -57,3 +78,24 @@ class NotionUtility(AbstractNotionClient):
                 return title_array[0]["text"]["content"]
                 
         return "Unnamed Page"
+    
+    
+if __name__ == "__main__":
+    util = NotionUtility()
+
+    # - Jarvis Clipboard (ID: 1a3389d5-7bd3-80d7-a507-e67d1b25822c)
+    # - Second Brain (ID: 1a6389d5-7bd3-80c5-9a87-e90b034989d0)
+    # - TODOs & Ideen (ID: 1a6389d5-7bd3-80b2-a8a7-e1e93f4d8dac)
+    
+    print(util.get_accessible_pages())
+    
+    page_id = "1a6389d5-7bd3-80b2-a8a7-e1e93f4d8dac"
+    response = util.get_page_children(page_id)
+    
+    # Pretty print formatted response
+    print(util.format_page_children(response))
+    
+    # - Wissens & Notizen Datenbank  1a6389d5-7bd3-8097-aa38-e93cb052615a
+    
+    print("="*80)
+    print(util.get_page_children("ea889531-fa77-4e26-9fbf-54d9002eeb91"))

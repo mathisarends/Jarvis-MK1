@@ -1,6 +1,7 @@
 import logging
 import sys
 
+# TODO: Den hier auch wirklich für das logging überall verwenden
 def setup_global_logging(log_file="app.log"):
     """Richtet globales Logging für das gesamte Projekt ein."""
     
