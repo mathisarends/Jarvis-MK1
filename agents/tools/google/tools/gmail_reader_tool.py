@@ -36,7 +36,7 @@ class GmailReaderTool(Tool):
 
         try:
             max_results = parameters.get("max_results", 5)
-            messages = self.gmail_reader.list_primary_unread_messages(max_results)
+            messages = self.gmail_reader.get_unread_primary_emails(max_results)
 
             if not messages:
                 return ToolResponse(

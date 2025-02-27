@@ -5,7 +5,6 @@ from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.notion.managers.notion_todo_manager import NotionTodoManager
 
-
 class NotionTodoTool(Tool):
     def __init__(self):
         self.todo_manager = NotionTodoManager()
@@ -34,7 +33,7 @@ class NotionTodoTool(Tool):
             action = parameters.get("action")
 
             if action == "get_tasks":
-                tasks = self.todo_manager.get_entries_and_delete_completed()
+                tasks = self.todo_manager.get_all_todos()
                 if not tasks:
                     return "No tasks found in Notion database."
                 return ToolResponse(tasks, "These are your current tasks.")
@@ -44,7 +43,7 @@ class NotionTodoTool(Tool):
                 if not task_name:
                     return "Error: 'task_name' is required for 'add_task'."
 
-                result = self.todo_manager.add_entry(task_name)
+                result = self.todo_manager.add_todo(task_name)
                 return ToolResponse(
                     f"Successfully added task: {result}",
                     "The task has been added to your Notion To-Do list."

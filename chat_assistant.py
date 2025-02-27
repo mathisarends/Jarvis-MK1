@@ -5,10 +5,12 @@ import re
 import traceback
 from openai import OpenAI
 from agents.tools.fitbit.fitbit_tool import FitbitTool
+from agents.tools.google.tools.gmail_emails_from_sender_tool import GmailEmailsFromSenderTool
 from agents.tools.google.tools.google_calendar_tool import GoogleCalendarTool
 from agents.tools.google.tools.youtube_tool import YoutubeTool
 from agents.tools.notion.tools.notion_clipboard_tool import NotionClipboardTool
 from agents.tools.notion.tools.notion_idea_tool import NotionIdeaTool
+from agents.tools.notion.tools.notion_second_brain_tool import NotionSecondBrainTool
 from agents.tools.notion.tools.notion_todo_tool import NotionTodoTool
 from agents.tools.pomodoro.pomodoro_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
@@ -54,6 +56,8 @@ class OpenAIChatAssistant:
         self.tool_registry.register_tool(NotionIdeaTool())
         self.tool_registry.register_tool(NotionTodoTool())
         self.tool_registry.register_tool(GoogleCalendarTool())
+        self.tool_registry.register_tool(GmailEmailsFromSenderTool())
+        self.tool_registry.register_tool(NotionSecondBrainTool())
         
     def get_system_prompt_with_current_date(self):
         current_date = datetime.now().strftime("%Y-%m-%d")
