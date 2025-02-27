@@ -163,3 +163,10 @@ class VoiceGenerator:
             self.text_queue.queue.clear()
         with self.audio_queue.mutex:
             self.audio_queue.queue.clear()
+            
+            
+if __name__ == "__main__":
+    voice_generator = VoiceGenerator()
+    text = "Sometimes you gotta run before you can walk. JARVIS, run diagnostics on Mark 42 and prep the lab. We're pulling an all-nighter."
+    voice_generator.speak(text)
+    voice_generator._process_audio_queue()
