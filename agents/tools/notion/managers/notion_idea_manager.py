@@ -10,7 +10,7 @@ class NotionIdeaManager(AbstractNotionClient):
         super().__init__()
         self.database_id = NotionPages.get_database_id("IDEAS")
 
-    def add_idea(self, name, tags=None, status="Initial"):
+    async def add_idea(self, name, tags=None, status="Initial"):
 
         data = {
             "parent": {"database_id": self.database_id},
@@ -35,7 +35,7 @@ class NotionIdeaManager(AbstractNotionClient):
             }
 
         try:
-            response = self._make_request("post", "pages", data)
+            response = await self._make_request("post", "pages", data)
 
             if response.status_code == 200:
                 self.logger.info(f"✅ Successfully added idea: {name}")
@@ -48,10 +48,10 @@ class NotionIdeaManager(AbstractNotionClient):
             self.logger.error(f"❌ API call failed: {str(e)}")
             return f"❌ API call failed: {str(e)}"
 
-    def get_all_ideas(self):
+    async def get_all_ideas(self):
         """Retrieves all ideas from the Notion database."""
         try:
-            response = self._make_request("post", f"databases/{self.database_id}/query")
+            response = await self._make_request("post", f"databases/{self.database_id}/query")
 
             if response.status_code != 200:
                 self.logger.error(f"❌ Error retrieving ideas: {response.text}")
@@ -75,11 +75,15 @@ class NotionIdeaManager(AbstractNotionClient):
             return f"❌ API call failed: {str(e)}"
 
 
-if __name__ == "__main__":
+async def main():
     manager = NotionIdeaManager()
     
-    print(manager.add_idea("Meine neue Idee", tags=["Spike", "Feature"], status="Überlegung"))
+    print(await manager.add_idea("Meine neue Idee", tags=["Spike", "Feature"], status="Überlegung"))
 
-    all_ideas = manager.get_all_ideas()
+    all_ideas =  await manager.get_all_ideas()
     for idea in all_ideas:
         print(f"💡 {idea['name']} (Status: {idea['status']}, Tags: {', '.join(idea['tags'])})")
+
+
+if __name__ == "__main__":
+    main()

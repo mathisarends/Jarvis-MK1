@@ -2,7 +2,6 @@ from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
 from agents.tools.notion.core.notion_markdown_parser import NotionMarkdownParser
 from agents.tools.notion.core.notion_pages import NotionPages
 
-
 class NotionClipboardManager(AbstractNotionClient):
     """Class for managing clipboard content in Notion."""
     
@@ -10,7 +9,7 @@ class NotionClipboardManager(AbstractNotionClient):
         super().__init__()
         self.clipboard_page_id = NotionPages.get_page_id("JARVIS_CLIPBOARD")
     
-    def append_to_clipboard(self, text):
+    async def append_to_clipboard(self, text):
         """Appends formatted text to the clipboard page with a divider."""
         divider_block = {
             "type": "divider",
@@ -23,7 +22,7 @@ class NotionClipboardManager(AbstractNotionClient):
             "children": [divider_block] + content_blocks
         }
         
-        response = self._make_request(
+        response = await self._make_request(
             "patch", 
             f"blocks/{self.clipboard_page_id}/children", 
             data

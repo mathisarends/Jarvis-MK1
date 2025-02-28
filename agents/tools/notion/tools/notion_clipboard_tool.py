@@ -30,7 +30,7 @@ class NotionClipboardTool(Tool):
             if not content:
                 return "Error: 'content' is required."
 
-            result = self.clipboard_manager.append_to_clipboard(content)
+            result = await self.clipboard_manager.append_to_clipboard(content)
             return ToolResponse(
                 f"Successfully saved to Notion clipboard: {result}",
                 "Content has been formatted with Markdown and added to your Notion clipboard page."

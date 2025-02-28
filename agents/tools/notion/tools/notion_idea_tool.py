@@ -37,7 +37,7 @@ class NotionIdeaTool(Tool):
             if not name:
                 return "Error: 'name' is required."
 
-            result = self.idea_manager.add_idea(name, thema)
+            result = await self.idea_manager.add_idea(name, thema)
             return ToolResponse(
                 f"Successfully added idea: {result}",
                 "The idea has been added to your Notion database."

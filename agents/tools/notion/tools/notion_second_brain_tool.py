@@ -33,7 +33,7 @@ class NotionSecondBrainTool(Tool):
                     "You need to provide a title for the idea."
                 )
 
-            result = self.second_brain_manager.capture_idea(title)
+            result = await self.second_brain_manager.capture_idea(title)
             return ToolResponse(
                 result,
                 "The idea has been successfully captured in the Second Brain."

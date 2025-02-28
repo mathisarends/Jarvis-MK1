@@ -12,7 +12,7 @@ class SecondBrainManager(AbstractNotionClient):
         self.database_id = NotionPages.get_database_id("WISSEN_NOTIZEN")
         
         
-    def capture_idea(self, title: str) -> str:
+    async def capture_idea(self, title: str) -> str:
         default_status = "Entwurf"
 
         data = {
@@ -28,7 +28,7 @@ class SecondBrainManager(AbstractNotionClient):
         }
 
         try:
-            response = self._make_request("post", "pages", data)
+            response = await self._make_request("post", "pages", data)
             if response is None:
                 return "❌ Keine Antwort vom Server (response is None)."
 

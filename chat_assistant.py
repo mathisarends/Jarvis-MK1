@@ -104,6 +104,7 @@ class OpenAIChatAssistant:
             )
             
             full_response = self.tts_streamer.process_openai_stream(stream)
+            print(full_response)
             
             self.history.append((messages[-1]["content"], full_response))
             

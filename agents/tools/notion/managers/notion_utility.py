@@ -7,9 +7,9 @@ from agents.tools.notion.core.abstract_notion_client import AbstractNotionClient
 class NotionUtility(AbstractNotionClient):
     """Utility class for general Notion operations."""
     
-    def get_accessible_pages(self):
+    async def get_accessible_pages(self):
         """Retrieves all Notion pages accessible with the current API token."""
-        response = self._make_request(
+        response = await self._make_request(
             "post", 
             "search", 
             {"filter": {"value": "page", "property": "object"}}
@@ -31,8 +31,8 @@ class NotionUtility(AbstractNotionClient):
 
         return "\nAccessible Pages:\n" + "\n".join(formatted_pages)
     
-    def get_page_children(self, page_id):
-        response = self._make_request("get", f"blocks/{page_id}/children")
+    async def get_page_children(self, page_id):
+        response = await self._make_request("get", f"blocks/{page_id}/children")
 
         if response.status_code != 200:
             self.logger.error(f"Error retrieving blocks: {response.text}")
@@ -56,8 +56,8 @@ class NotionUtility(AbstractNotionClient):
 
         return "\nAccessible Databases:\n" + "\n".join(databases)
     
-    def get_database_schema(self, database_id):
-        response = self._make_request("get", f"databases/{database_id}")
+    async def get_database_schema(self, database_id):
+        response = await self._make_request("get", f"databases/{database_id}")
 
         if response.status_code != 200:
             self.logger.error(f"Error retrieving database: {response.text}")
