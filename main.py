@@ -3,6 +3,9 @@ from wakeword_listener import WakeWordListener
 from whisper_speech_recognition import WhuisperSpeechRecognition
 from audio_transcriber import AudioTranscriber
 from chat_assistant import OpenAIChatAssistant
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 async def main():
     wakeword_listener = WakeWordListener(wakeword="jarvis")
