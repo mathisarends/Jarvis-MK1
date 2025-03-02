@@ -1,11 +1,13 @@
 import asyncio
 from wakeword_listener import WakeWordListener
 from whisper_speech_recognition import WhuisperSpeechRecognition
+from audio_transcriber import AudioTranscriber
 from chat_assistant import OpenAIChatAssistant
 
 async def main():
     wakeword_listener = WakeWordListener(wakeword="jarvis")
     speech_recognizer = WhuisperSpeechRecognition()
+    audio_transcriber = AudioTranscriber()
     chat_assistant = OpenAIChatAssistant()
 
     try:
@@ -15,13 +17,12 @@ async def main():
                 
                 try:
                     audio_file = speech_recognizer.record_audio()
-
-                    text = speech_recognizer.transcribe_audio(audio_file)
-                    print(text)
+                    spoken_user_prompt = audio_transcriber.transcribe_audio(audio_file)
+                    print(spoken_user_prompt)
                     
-                    if text:
-                        print(f"🗣 Erkannt: {text}")
-                        await chat_assistant.speak_response(text)
+                    if spoken_user_prompt:
+                        print(f"🗣 Erkannt: {spoken_user_prompt}")
+                        await chat_assistant.speak_response(spoken_user_prompt)
                         
                 finally:
                     wakeword_listener.resume_listening()

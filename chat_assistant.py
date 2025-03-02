@@ -10,7 +10,7 @@ from voice_generator import VoiceGenerator
 from agents.tools.core.tool_registry import ToolRegistry
 
 class OpenAIChatAssistant:
-    def __init__(self, voice="fable", model="gpt-4o-mini", history_limit=5):
+    def __init__(self, model="gpt-4o-mini", history_limit=5):
         """Initialisiert den Chat-Assistenten mit OpenAI API, TTS und Function Calling"""
         self.openai = OpenAI()
         self.model = model
@@ -25,14 +25,24 @@ class OpenAIChatAssistant:
             "Du kommunizierst ausschließlich auf Deutsch, es sei denn, es wird ausdrücklich nach Englisch gefragt. "
             "Deine Antworten sind für die Sprachausgabe optimiert – sie sind natürlich, flüssig und prägnant. "
             "Halte deine Sätze klar und strukturiert. Falls Kontext fehlt, frage direkt nach. "
-            
+
             "Falls der Nutzer längere Texte diktiert oder von dir generieren lässt, wie eine Ideensammlung, einen E-Mail-Entwurf oder eine Einkaufsliste, "
             "schlage vor, diese im NotionClipboardTool zu speichern, falls gewünscht. "
             "Falls der Text eine konkrete Aufgabe enthält (z. B. eine To-Do-Liste oder Handlungsaufforderung), "
             "biete zusätzlich an, die relevanten Punkte direkt ins NotionTodoTool zu übertragen. "
-            
+
             "Falls in einer Diskussion gute Ideen aufkommen, die es sich lohnt festzuhalten, "
-            "schlage vor, diese im NotionIdeaTool zu speichern."
+            "schlage vor, diese im NotionIdeaTool zu speichern. "
+
+            "Wenn du Schlafdaten erhältst, fasse die Analyse kompakt zusammen und betone nur relevante Auffälligkeiten. "
+            "Gehe kurz auf die Schlafphasen ein, wenn es sinnvoll ist: "
+            "- **Leichtschlaf:** Falls auffällig lang oder kurz, erwähne es. "
+            "- **Tiefschlaf:** Falls zu wenig vorhanden, weise darauf hin, dass dies die Erholung beeinträchtigen könnte. "
+            "- **REM-Schlaf:** Falls auffällig, erwähne den Einfluss auf Gedächtnis & Erholung. "
+            "- **Wachphasen:** Falls ungewöhnlich viele oder lange Wachphasen vorkommen, gib einen kurzen Hinweis. "
+
+            "Falls der Schlaf insgesamt unregelmäßig ist oder bestimmte Muster auffallen, kannst du eine kurze Einschätzung geben, "
+            "aber halte dich flexibel – nicht jede Nacht braucht eine detaillierte Analyse."
         )
 
         for tool in ToolFactory.create_all_tools():

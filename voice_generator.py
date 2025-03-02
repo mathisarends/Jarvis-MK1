@@ -10,7 +10,7 @@ import time
 import uuid
 
 class VoiceGenerator:
-    def __init__(self, voice="fable", cache_dir="/tmp/tts_cache"):
+    def __init__(self, voice="nova", cache_dir="/tmp/tts_cache"):
         """Initialisiert den TTS Generator mit OpenAI API und Vorausverarbeitung"""
         self.openai = OpenAI()
         self.voice = voice

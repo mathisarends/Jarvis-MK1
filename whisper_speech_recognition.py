@@ -63,7 +63,6 @@ class WhuisperSpeechRecognition:
 
         audio_data = np.concatenate(buffer, axis=0)
         
-        # pylint: disable=no-member
         with wave.open(filename, "wb") as wf:
             wf.setnchannels(1)
             wf.setsampwidth(2)
@@ -72,27 +71,9 @@ class WhuisperSpeechRecognition:
 
         return filename
         
-    def transcribe_audio(self, filename):
-        """Sendet die Audiodatei an OpenAI Whisper API und gibt den erkannten Text zurück"""
-        print("📝 Sende Audiodatei an OpenAI...")
-        
-        try:
-            with open(filename, "rb") as audio_file:
-                transcription = self.openai.audio.transcriptions.create(
-                    model="whisper-1", 
-                    file=audio_file, 
-                    response_format="text" 
-                )
-
-            return transcription  
-            
-        except Exception as e:
-            print(f"❌ Fehler bei der Transkription: {str(e)}")
-            return None
-    
     def set_open_ai_key(self):
         """Gibt den OpenAI API Key aus der Umgebungsvariable zurück."""
-        load_dotenv()  # ✅ Erst `.env` laden
+        load_dotenv()  
         
         self.open_ai_key = os.getenv("OPENAI_API_KEY")
         if not self.open_ai_key:
