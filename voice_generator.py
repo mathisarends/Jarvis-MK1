@@ -155,9 +155,6 @@ class VoiceGenerator:
             if pygame.mixer.get_init():
                 pygame.mixer.music.stop()
 
-        # 2. Queues leeren.
-        self._clear_queues()
-
     def _clear_queues(self):
         with self.text_queue.mutex:
             self.text_queue.queue.clear()
