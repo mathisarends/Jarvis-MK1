@@ -21,11 +21,12 @@ async def main():
                 try:
                     audio_file = speech_recognizer.record_audio()
                     spoken_user_prompt = audio_transcriber.transcribe_audio(audio_file)
-                    print(spoken_user_prompt)
+
+                    if spoken_user_prompt is None:
+                        continue
                     
-                    if spoken_user_prompt:
-                        print(f"🗣 Erkannt: {spoken_user_prompt}")
-                        await chat_assistant.speak_response(spoken_user_prompt)
+                    print(f"🗣 Erkannt: {spoken_user_prompt}")
+                    await chat_assistant.speak_response(spoken_user_prompt)
                         
                 finally:
                     wakeword_listener.resume_listening()
