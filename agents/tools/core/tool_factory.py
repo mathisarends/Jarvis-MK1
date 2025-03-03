@@ -9,6 +9,7 @@ from agents.tools.notion.tools.notion_second_brain_tool import NotionSecondBrain
 from agents.tools.notion.tools.notion_todo_tool import NotionTodoTool
 from agents.tools.pomodoro.pomodoro_tool import PomodoroTool
 from agents.tools.spotify.spotify_tool import SpotifyTool
+from agents.tools.volume_regulation.volume_control_tool import VolumeControlTool
 from agents.tools.weather.weather_tool import WeatherTool
 
 class ToolFactory:
@@ -39,4 +40,5 @@ class ToolFactory:
         tools.append(FitbitTool())
         tools.append(SpotifyTool())
         tools.append(PomodoroTool())
+        tools.append(VolumeControlTool())
         return tools

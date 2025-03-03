@@ -1,7 +1,5 @@
 import asyncio
 from wakeword_listener import WakeWordListener
-from whisper_speech_recognition import WhuisperSpeechRecognition
-from audio_transcriber import AudioTranscriber
 from chat_assistant import OpenAIChatAssistant
 from dotenv import load_dotenv
 from audio.speech_to_text.speech_to_text_recorder import SpeechRecognition
@@ -20,8 +18,9 @@ async def main():
                 
                 try:
                     spoken_user_prompt = speech_recognition.record_user_prompt()
+                    print("spoken_user_prompt", spoken_user_prompt)
 
-                    if spoken_user_prompt is None:
+                    if spoken_user_prompt == "":
                         continue
                     
                     print(f"🗣 Erkannt: {spoken_user_prompt}")
