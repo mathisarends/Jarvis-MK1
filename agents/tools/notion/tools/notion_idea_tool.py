@@ -40,7 +40,8 @@ class NotionIdeaTool(Tool):
             result = await self.idea_manager.add_idea(name, thema)
             return ToolResponse(
                 f"Successfully added idea: {result}",
-                "The idea has been added to your Notion database."
+                "The idea has been added to your Notion database.",
+                standard_response_audio_sub_path="./tts_output/ideen/tts_ideen_x.mp3"
             )
         except Exception as e:
             return f"Error executing NotionIdeaTool: {str(e)}"

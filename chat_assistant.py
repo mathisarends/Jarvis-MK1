@@ -1,9 +1,11 @@
 from collections import deque
 from datetime import datetime
 import json
+import random
 import traceback
 from openai import OpenAI
 from agents.tools.core.tool_factory import ToolFactory
+from audio.sound_player import SoundPlayer
 from text_to_speech_streamer import TextToSpeechStreamer
 from voice_generator import VoiceGenerator
 
@@ -84,10 +86,18 @@ class OpenAIChatAssistant:
 
             for tool_call in assistant_message.tool_calls:
                 tool = self.tool_registry.get_tool(tool_call.function.name)
+                
                 if not tool:
                     continue
 
                 tool_response = await tool.execute(json.loads(tool_call.function.arguments))
+                
+                if tool_response.standard_response_audio_sub_path:
+                    random_index = random.randint(1, 4)
+                    audio_path = tool_response.standard_response_audio_sub_path.replace("x", str(random_index))
+
+                    SoundPlayer(audio_path).play_audio()
+                    return
 
                 if tool_response.behavior_instructions:
                     messages[0]["content"] = f"{self.system_prompt}\n\n{tool_response.behavior_instructions}"
@@ -107,9 +117,6 @@ class OpenAIChatAssistant:
     
     def _stream_response(self, messages):
         try:
-            last_used_tool_name = self.get_last_tool_call(messages)
-            print(last_used_tool_name)
-            
             stream = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
@@ -129,15 +136,6 @@ class OpenAIChatAssistant:
             print(error_message)
             print(detailed_trace)
             return f"{error_message}\n{detailed_trace}"
-        
-    def get_last_tool_call(self, messages):
-        for msg in reversed(messages):
-            if isinstance(msg, dict) and "tool_calls" in msg and msg["tool_calls"]:
-                tool_call = msg["tool_calls"][0]
-                function_data = json.loads(tool_call["function"]["arguments"])
-                return function_data.get("action")  
-        return None 
-
         
     async def speak_response(self, user_input):
         """Gets a streaming response and speaks it sentence by sentence"""

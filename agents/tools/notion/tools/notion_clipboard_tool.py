@@ -33,7 +33,8 @@ class NotionClipboardTool(Tool):
             result = await self.clipboard_manager.append_to_clipboard(content)
             return ToolResponse(
                 f"Successfully saved to Notion clipboard: {result}",
-                "Content has been formatted with Markdown and added to your Notion clipboard page."
+                "Content has been formatted with Markdown and added to your Notion clipboard page.",
+                standard_response_audio_sub_path="./tts_output/clipboard/tts_clipboard_x.mp3"
             )
         except Exception as e:
             return f"Error executing NotionClipboardTool: {str(e)}"
