@@ -1,9 +1,11 @@
 from collections import deque
 from datetime import datetime
 import json
+import random
 import traceback
 from openai import OpenAI
 from agents.tools.core.tool_factory import ToolFactory
+from audio.sound_player import SoundPlayer
 from text_to_speech_streamer import TextToSpeechStreamer
 from voice_generator import VoiceGenerator
 
@@ -84,10 +86,18 @@ class OpenAIChatAssistant:
 
             for tool_call in assistant_message.tool_calls:
                 tool = self.tool_registry.get_tool(tool_call.function.name)
+                
                 if not tool:
                     continue
 
                 tool_response = await tool.execute(json.loads(tool_call.function.arguments))
+                
+                if tool_response.standard_response_audio_sub_path:
+                    random_index = random.randint(1, 4)
+                    audio_path = tool_response.standard_response_audio_sub_path.replace("x", str(random_index))
+
+                    SoundPlayer(audio_path).play_audio()
+                    return
 
                 if tool_response.behavior_instructions:
                     messages[0]["content"] = f"{self.system_prompt}\n\n{tool_response.behavior_instructions}"

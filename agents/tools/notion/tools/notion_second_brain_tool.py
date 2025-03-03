@@ -36,7 +36,8 @@ class NotionSecondBrainTool(Tool):
             result = await self.second_brain_manager.capture_idea(title)
             return ToolResponse(
                 result,
-                "The idea has been successfully captured in the Second Brain."
+                "The idea has been successfully captured in the Second Brain.",
+                standard_response_audio_sub_path="./tts_output/second_brain/tts_second_brain_x.mp3"
             )
 
         except Exception as e:

@@ -52,7 +52,8 @@ class NotionTodoTool(Tool):
                 result = await self.todo_manager.add_todo(task_name)
                 return ToolResponse(
                     f"Successfully added task: {result}",
-                    "The task has been added to your Notion To-Do list."
+                    "The task has been added to your Notion To-Do list.",
+                    standard_response_audio_sub_path="./tts_output/todo/tts_todo_x.mp3"
                 )
 
             return ToolResponse(f"Error: Unknown action '{action}'. Supported actions are 'get_tasks', 'get_daily_top_tasks', and 'add_task'.",
