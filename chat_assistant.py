@@ -107,6 +107,9 @@ class OpenAIChatAssistant:
     
     def _stream_response(self, messages):
         try:
+            last_used_tool_name = self.get_last_tool_call(messages)
+            print(last_used_tool_name)
+            
             stream = self.openai.chat.completions.create(
                 model=self.model,
                 messages=messages,
@@ -126,6 +129,15 @@ class OpenAIChatAssistant:
             print(error_message)
             print(detailed_trace)
             return f"{error_message}\n{detailed_trace}"
+        
+    def get_last_tool_call(self, messages):
+        for msg in reversed(messages):
+            if isinstance(msg, dict) and "tool_calls" in msg and msg["tool_calls"]:
+                tool_call = msg["tool_calls"][0]
+                function_data = json.loads(tool_call["function"]["arguments"])
+                return function_data.get("action")  
+        return None 
+
         
     async def speak_response(self, user_input):
         """Gets a streaming response and speaks it sentence by sentence"""

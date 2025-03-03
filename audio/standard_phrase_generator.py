@@ -1,9 +1,8 @@
 import os
-import uuid
+import random
 from openai import OpenAI
-from io import BytesIO
 
-class TTSFileGenerator:
+class StandardPhraseGenerator:
     def __init__(self, voice="nova", output_dir="tts_output"):
         """Initialisiert den TTS-Dateigenerator mit OpenAI API und definiert das Ausgabe-Verzeichnis."""
         self.openai = OpenAI()
@@ -21,8 +20,9 @@ class TTSFileGenerator:
             category_dir = os.path.join(self.output_dir, category)
             os.makedirs(category_dir, exist_ok=True)
             
-            unique_id = str(uuid.uuid4())[:8]
-            file_name = f"tts_{unique_id}.{file_format}"
+            existing_files = [f for f in os.listdir(category_dir) if f.endswith(f".{file_format}")]
+            index = len(existing_files) + 1
+            file_name = f"tts_{category}_{index}.{file_format}"
             file_path = os.path.join(category_dir, file_name)
             
             response = self.openai.audio.speech.create(
@@ -41,8 +41,23 @@ class TTSFileGenerator:
             print(f"❌ Fehler bei der Sprachgenerierung: {e}")
             return None
 
+    def get_random_speech_file(self, category="general"):
+        """Wählt zufällig eine gespeicherte Sprachdatei aus einer Kategorie aus."""
+        category_dir = os.path.join(self.output_dir, category)
+        if not os.path.exists(category_dir):
+            print(f"❌ Keine Dateien in der Kategorie '{category}' gefunden.")
+            return None
+
+        files = [f for f in os.listdir(category_dir) if f.endswith(".mp3")]
+        if not files:
+            print(f"❌ Keine gespeicherten Dateien in '{category}'.")
+            return None
+
+        return os.path.join(category_dir, random.choice(files))
+
+
 if __name__ == "__main__":
-    tts = TTSFileGenerator()
+    tts = StandardPhraseGenerator()
 
     # Clipboard
     tts.generate_speech_file("Selbstverständlich. Text in Zwischenablage kopiert.", category="clipboard")
