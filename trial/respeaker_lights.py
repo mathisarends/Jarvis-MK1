@@ -1,12 +1,10 @@
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-
 import time
+from gpiozero import LED
 
 from pixel_ring import pixel_ring
-from gpiozero import LED
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 power = LED(5)
 power.on()
