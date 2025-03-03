@@ -4,13 +4,13 @@ from whisper_speech_recognition import WhuisperSpeechRecognition
 from audio_transcriber import AudioTranscriber
 from chat_assistant import OpenAIChatAssistant
 from dotenv import load_dotenv
+from audio.speech_to_text.speech_to_text_recorder import SpeechRecognition
 
 load_dotenv(override=True)
 
 async def main():
     wakeword_listener = WakeWordListener(wakeword="jarvis")
-    speech_recognizer = WhuisperSpeechRecognition()
-    audio_transcriber = AudioTranscriber()
+    speech_recognition = SpeechRecognition()
     chat_assistant = OpenAIChatAssistant()
 
     try:
@@ -19,8 +19,7 @@ async def main():
                 wakeword_listener.pause_listening()
                 
                 try:
-                    audio_file = speech_recognizer.record_audio()
-                    spoken_user_prompt = audio_transcriber.transcribe_audio(audio_file)
+                    spoken_user_prompt = speech_recognition.record_user_prompt()
 
                     if spoken_user_prompt is None:
                         continue
