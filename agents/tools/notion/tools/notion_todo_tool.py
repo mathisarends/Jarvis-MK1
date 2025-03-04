@@ -4,6 +4,7 @@ from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.notion.managers.notion_todo_manager import NotionTodoManager
+from audio.standard_phrase_player import StandardPhrasePlayer
 
 class NotionTodoTool(Tool):
     def __init__(self):
@@ -48,6 +49,8 @@ class NotionTodoTool(Tool):
                 task_name = parameters.get("task_name")
                 if not task_name:
                     return ToolResponse("Error: 'task_name' is required for 'add_task'.", "You must provide a task name.")
+                
+                StandardPhrasePlayer().play_randomized_audio("./tts_output/todo/tts_todo_x.mp3")
 
                 result = await self.todo_manager.add_todo(task_name)
                 return ToolResponse(

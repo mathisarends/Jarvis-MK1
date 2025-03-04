@@ -4,6 +4,7 @@ from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.notion.managers.notion_idea_manager import NotionIdeaManager
+from audio.standard_phrase_player import StandardPhrasePlayer
 
 
 class NotionIdeaTool(Tool):
@@ -38,10 +39,13 @@ class NotionIdeaTool(Tool):
                 return "Error: 'name' is required."
 
             result = await self.idea_manager.add_idea(name, thema)
+            
+            StandardPhrasePlayer().play_randomized_audio("./tts_output/ideen/tts_ideen_x.mp3")
+            
             return ToolResponse(
                 f"Successfully added idea: {result}",
                 "The idea has been added to your Notion database.",
-                standard_response_audio_sub_path="./tts_output/ideen/tts_ideen_x.mp3"
+                audio_response_handled=True
             )
         except Exception as e:
             return f"Error executing NotionIdeaTool: {str(e)}"

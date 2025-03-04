@@ -5,6 +5,7 @@ from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 
 from agents.tools.notion.managers.second_brain_manager import SecondBrainManager
+from audio.standard_phrase_player import StandardPhrasePlayer
 
 class NotionSecondBrainTool(Tool):
     def __init__(self):
@@ -34,10 +35,13 @@ class NotionSecondBrainTool(Tool):
                 )
 
             result = await self.second_brain_manager.capture_idea(title)
+            
+            StandardPhrasePlayer().play_randomized_audio("./tts_output/second_brain/tts_second_brain_x.mp3")
+            
             return ToolResponse(
                 result,
                 "The idea has been successfully captured in the Second Brain.",
-                standard_response_audio_sub_path="./tts_output/second_brain/tts_second_brain_x.mp3"
+                audio_response_handled=True
             )
 
         except Exception as e:

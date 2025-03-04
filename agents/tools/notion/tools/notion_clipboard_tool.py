@@ -4,6 +4,7 @@ from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.notion.managers.notion_clipboard_manager import NotionClipboardManager
+from audio.standard_phrase_player import StandardPhrasePlayer
 
 
 class NotionClipboardTool(Tool):
@@ -31,10 +32,13 @@ class NotionClipboardTool(Tool):
                 return "Error: 'content' is required."
 
             result = await self.clipboard_manager.append_to_clipboard(content)
+            
+            StandardPhrasePlayer().play_randomized_audio("./tts_output/clipboard/tts_clipboard_x.mp3")
+            
             return ToolResponse(
                 f"Successfully saved to Notion clipboard: {result}",
                 "Content has been formatted with Markdown and added to your Notion clipboard page.",
-                standard_response_audio_sub_path="./tts_output/clipboard/tts_clipboard_x.mp3"
+                audio_response_handled=True
             )
         except Exception as e:
             return f"Error executing NotionClipboardTool: {str(e)}"

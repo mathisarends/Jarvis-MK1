@@ -4,6 +4,7 @@ from agents.tools.core.tool_parameter import ToolParameter
 from agents.tools.core.tool_registry import Tool
 from agents.tools.core.tool_response import ToolResponse
 from agents.tools.volume_regulation.volume_control import VolumeControl
+from audio.standard_phrase_player import StandardPhrasePlayer
 
 class VolumeControlTool(Tool):
     def __init__(self):
@@ -34,29 +35,28 @@ class VolumeControlTool(Tool):
 
             if action == "set":
                 if value is None:
-                    return "Error: 'value' is required for 'set'."
-                VolumeControl.set_volume_level(value)
-                return ToolResponse(
-                    f"Volume set to {value * 10}%",
-                    f"Your system volume is now set to level {value}.",
-                )
+                    return ToolResponse("Error: 'value' is required for 'set'.", "No volume change occurred.")
 
+                VolumeControl.set_volume_level(value)
+            
             elif action == "increase":
                 VolumeControl.increase_volume()
-                return ToolResponse(
-                    "Volume increased by 15%",
-                    "Your system volume has been increased.",
-                )
-
+            
             elif action == "decrease":
                 VolumeControl.decrease_volume()
-                return ToolResponse(
-                    "Volume decreased by 15%",
-                    "Your system volume has been decreased.",
-                )
-
+            
             else:
-                return f"Error: Unknown action '{action}'"
+                return ToolResponse(f"Error: Unknown action '{action}'", "Invalid volume action.")
+
+            current_volume = VolumeControl.get_volume()
+            StandardPhrasePlayer.play_volume_audio(current_volume)
+
+            return ToolResponse(
+                f"Volume action '{action}' executed successfully. Current volume: {current_volume}%.",
+                f"Your system volume is now at {current_volume}%.",
+                audio_response_handled=True
+            )
 
         except Exception as e:
-            return f"Error executing VolumeControlTool: {str(e)}"
+            return ToolResponse(f"Error executing VolumeControlTool: {str(e)}", "Volume change failed.")
+
