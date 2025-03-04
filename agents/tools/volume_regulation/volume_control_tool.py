@@ -58,5 +58,6 @@ class VolumeControlTool(Tool):
             )
 
         except Exception as e:
+            print("Fehler ist passiert aber was?", e)
             return ToolResponse(f"Error executing VolumeControlTool: {str(e)}", "Volume change failed.")
 

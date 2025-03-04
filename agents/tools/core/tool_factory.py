@@ -38,7 +38,7 @@ class ToolFactory:
         tools.extend(ToolFactory.create_google_tools())
         tools.append(WeatherTool())
         tools.append(FitbitTool())
-        tools.append(SpotifyTool())
+        # tools.append(SpotifyTool())
         tools.append(PomodoroTool())
         tools.append(VolumeControlTool())
         return tools

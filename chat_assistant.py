@@ -92,6 +92,9 @@ class OpenAIChatAssistant:
 
                 tool_response = await tool.execute(json.loads(tool_call.function.arguments))
                 
+                if tool_response.audio_response_handled:
+                    return
+                
                 if tool_response.standard_response_audio_sub_path:
                     random_index = random.randint(1, 4)
                     audio_path = tool_response.standard_response_audio_sub_path.replace("x", str(random_index))

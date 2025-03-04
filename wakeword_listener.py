@@ -20,7 +20,7 @@ class WakeWordListener:
         self.handle = pvporcupine.create(
             access_key=self.load_access_key(),
             keywords=[wakeword],
-            sensitivities=[0.7]
+            sensitivities=[0.8]
         )
 
         # Separate PyAudio-Instanz für Input

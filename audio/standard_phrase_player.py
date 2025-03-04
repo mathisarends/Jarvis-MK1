@@ -11,13 +11,13 @@ class StandardPhrasePlayer:
         sound_player.play_audio()
         
     @staticmethod
-    def play_volume_audio(self, volume: int):
+    def play_volume_audio(volume: int):
         """
         Spielt die passende TTS-Datei für die aktuelle Lautstärke ab.
         :param volume: Lautstärke in Prozent (0-100, in 5er-Schritten).
         """
         # Rundet auf den nächsten 5er-Schritt
         rounded_volume = round(volume / 5) * 5
-        filename = f"tts_volume_{rounded_volume}.mp3"
+        filename = f"./tts_output/volume/tts_volume_{rounded_volume}.mp3"
         sound_player = SoundPlayer(filename)
         sound_player.play_audio()
